@@ -41,9 +41,6 @@
     <ClCompile Include="C:\KamataEngine\DirectXGame\base\StringUtility.cpp">
       <Filter>KamataEngine\Source</Filter>
     </ClCompile>
-    <ClCompile Include="MyMath.cpp">
-      <Filter>Math</Filter>
-    </ClCompile>
     <ClCompile Include="Matrix.cpp">
       <Filter>Math</Filter>
     </ClCompile>
@@ -122,9 +119,6 @@
     <ClInclude Include="C:\KamataEngine\DirectXGame\2d\ImGuiManager.h" />
     <ClInclude Include="C:\KamataEngine\DirectXGame\base\StringUtility.h">
       <Filter>KamataEngine\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="MyMath.h">
-      <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="Matrix.h">
       <Filter>Math</Filter>
