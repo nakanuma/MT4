@@ -14,7 +14,7 @@
     <Filter Include="KamataEngine\Adapter">
       <UniqueIdentifier>{c6468eb4-788b-4a83-b207-a5f4804e56c5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="MyData">
+    <Filter Include="Math">
       <UniqueIdentifier>{9e14fe19-c716-4e98-be67-3bbfd4cc1e1a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -42,10 +42,13 @@
       <Filter>KamataEngine\Source</Filter>
     </ClCompile>
     <ClCompile Include="MyMath.cpp">
-      <Filter>MyData</Filter>
+      <Filter>Math</Filter>
     </ClCompile>
     <ClCompile Include="Matrix.cpp">
-      <Filter>MyData</Filter>
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Vec3.cpp">
+      <Filter>Math</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -121,10 +124,13 @@
       <Filter>KamataEngine\Include</Filter>
     </ClInclude>
     <ClInclude Include="MyMath.h">
-      <Filter>MyData</Filter>
+      <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="Matrix.h">
-      <Filter>MyData</Filter>
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Vec3.h">
+      <Filter>Math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
