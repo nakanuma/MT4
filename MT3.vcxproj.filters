@@ -44,6 +44,9 @@
     <ClCompile Include="MyMath.cpp">
       <Filter>MyData</Filter>
     </ClCompile>
+    <ClCompile Include="Matrix.cpp">
+      <Filter>MyData</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\KamataEngine\DirectXGame\audio\Audio.h">
@@ -118,6 +121,9 @@
       <Filter>KamataEngine\Include</Filter>
     </ClInclude>
     <ClInclude Include="MyMath.h">
+      <Filter>MyData</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix.h">
       <Filter>MyData</Filter>
     </ClInclude>
   </ItemGroup>
