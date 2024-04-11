@@ -1,11 +1,19 @@
+#include <assert.h>
 #include "Vec3.h"
+#include "Matrix.h"
 
-Vec3::Vec3() : x(0.0f), y(0.0f), z(0.0f)
+Vec3::Vec3()
 {
+	x = 0.0f;
+	y = 0.0f;
+	z = 0.0f;
 }
 
-Vec3::Vec3(float x, float y, float z) : x(x), y(y), z(z)
+Vec3::Vec3(float argX, float argY, float argZ)
 {
+	x = argX;
+	y = argY;
+	z = argZ;
 }
 
 Vec3 Vec3::Add(const Vec3& v1, const Vec3& v2)
@@ -54,4 +62,21 @@ Vec3 Vec3::Normalize(const Vec3& v)
 		v.y / norm,
 		v.z / norm
 	);
+}
+
+Vec3 Vec3::Transform(const Vec3& vector, const Matrix& matrix)
+{
+	Vec3 result;
+
+	result.x = vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0] + 1.0f * matrix.m[3][0];
+	result.y = vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1] + 1.0f * matrix.m[3][1];
+	result.z = vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2] + 1.0f * matrix.m[3][2];
+	float w = vector.x * matrix.m[0][3] + vector.y * matrix.m[1][3] + vector.z * matrix.m[2][3] + 1.0f * matrix.m[3][3];
+	assert(w != 0.0f);
+
+	result.x /= w;
+	result.y /= w;
+	result.z /= w;
+
+	return result;
 }

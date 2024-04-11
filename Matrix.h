@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Vec3.h"
 
 class Matrix {
 public:
@@ -30,4 +31,9 @@ public:
 	static Matrix Transpose(const Matrix& m);
 	// 単位行列の作成
 	static Matrix MakeIdentity();
+
+	// 平行移動
+	static Matrix MakeTranslate(const Vec3& translate);
+	// 拡大縮小行列
+	static Matrix MakeScale(const Vec3& scale);
 };

@@ -172,3 +172,25 @@ Matrix Matrix::MakeIdentity()
 
 	return result;
 }
+
+Matrix Matrix::MakeTranslate(const Vec3& translate)
+{
+	Matrix result = MakeIdentity();
+
+	result.m[3][0] = translate.x;
+	result.m[3][1] = translate.y;
+	result.m[3][2] = translate.z;
+
+	return result;
+}
+
+Matrix Matrix::MakeScale(const Vec3& scale)
+{
+	Matrix result = MakeIdentity();
+
+	result.m[0][0] = scale.x;
+	result.m[1][1] = scale.y;
+	result.m[2][2] = scale.z;
+
+	return result;
+}

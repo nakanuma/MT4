@@ -34,28 +34,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = {0};
 	char preKeys[256] = {0};
 
-	Matrix m1 = {
-		3.2f, 0.7f, 9.6f, 4.4f,
-		5.5f, 1.3f, 7.8f, 2.1f,
-		6.9f, 8.0f, 2.6f, 1.0f,
-		0.5f, 7.2f, 5.1f, 3.3f
+	Vec3 translate{ 4.1f, 2.6f, 0.8f };
+	Vec3 scale{ 1.5f, 5.2f, 7.3f };
+	Matrix translateMatrix = Matrix::MakeTranslate(translate);
+	Matrix scaleMatrix = Matrix::MakeScale(scale);
+	Vec3 point{ 2.3f, 3.8f, 1.4f };
+	Matrix transformMatrix = {
+		1.0f, 2.0f, 3.0f, 4.0f,
+		3.0f, 1.0f, 1.0f, 2.0f,
+		1.0f, 4.0f, 2.0f, 3.0f,
+		2.0f, 2.0f, 1.0f, 3.0f,
 	};
-
-	Matrix m2 = {
-		4.1f, 6.5f, 3.3f, 2.2f,
-		8.8f, 0.6f, 9.9f, 7.7f,
-		1.1f, 5.5f, 6.6f, 0.0f,
-		3.3f, 9.9f, 8.8f, 2.2f
-	};
-
-	Matrix resultAdd = Matrix::Add(m1, m2);
-	Matrix resultSubtract = Matrix::Subtract(m1, m2);
-	Matrix resultMultiply = Matrix::Multiply(m1, m2);
-	Matrix inverseM1 = Matrix::Inverse(m1);
-	Matrix inverseM2 = Matrix::Inverse(m2);
-	Matrix transposeM1 = Matrix::Transpose(m1);
-	Matrix transposeM2 = Matrix::Transpose(m2);
-	Matrix identity = Matrix::MakeIdentity();
+	Vec3 transformed = Vec3::Transform(point, transformMatrix);
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -79,14 +69,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 
 		// 計算結果を表示
-		MatrixScreenPrintf(0, 0, resultAdd, "Add");
-		MatrixScreenPrintf(0, kRowHeight * 5, resultSubtract, "Subtract");
-		MatrixScreenPrintf(0, kRowHeight * 5 * 2, resultMultiply, "Multiply");
-		MatrixScreenPrintf(0, kRowHeight * 5 * 3, inverseM1, "inverseM1");
-		MatrixScreenPrintf(0, kRowHeight * 5 * 4, inverseM2, "inverseM2");
-		MatrixScreenPrintf(kColumnWidth * 5, 0, transposeM1, "transposeM1");
-		MatrixScreenPrintf(kColumnWidth * 5, kRowHeight * 5, transposeM2, "transposeM2");
-		MatrixScreenPrintf(kColumnWidth * 5, kRowHeight * 5 * 2, identity, "identity");
+		VectorScreenPrintf(0, 0, transformed, "transformed");
+		MatrixScreenPrintf(0, 20, translateMatrix, "translateMatrix");
+		MatrixScreenPrintf(0, 20 + kRowHeight * 5, scaleMatrix, "scaleMatrix");
 
 		///
 		/// ↑描画処理ここまで
