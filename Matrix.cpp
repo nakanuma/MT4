@@ -46,6 +46,37 @@ Matrix::Matrix(float m00, float m01, float m02, float m03, float m10, float m11,
 	m[3][3] = m33;
 }
 
+Matrix Matrix::operator*(const Matrix& m1)
+{
+	return Matrix(
+		m[0][0] * m1.m[0][0] + m[0][1] * m1.m[1][0] + m[0][2] * m1.m[2][0] + m[0][3] * m1.m[3][0],
+		m[0][0] * m1.m[0][1] + m[0][1] * m1.m[1][1] + m[0][2] * m1.m[2][1] + m[0][3] * m1.m[3][1],
+		m[0][0] * m1.m[0][2] + m[0][1] * m1.m[1][2] + m[0][2] * m1.m[2][2] + m[0][3] * m1.m[3][2],
+		m[0][0] * m1.m[0][3] + m[0][1] * m1.m[1][3] + m[0][2] * m1.m[2][3] + m[0][3] * m1.m[3][3],
+							  								  						   
+		m[1][0] * m1.m[0][0] + m[1][1] * m1.m[1][0] + m[1][2] * m1.m[2][0] + m[1][3] * m1.m[3][0],
+		m[1][0] * m1.m[0][1] + m[1][1] * m1.m[1][1] + m[1][2] * m1.m[2][1] + m[1][3] * m1.m[3][1],
+		m[1][0] * m1.m[0][2] + m[1][1] * m1.m[1][2] + m[1][2] * m1.m[2][2] + m[1][3] * m1.m[3][2],
+		m[1][0] * m1.m[0][3] + m[1][1] * m1.m[1][3] + m[1][2] * m1.m[2][3] + m[1][3] * m1.m[3][3],
+						  								  							  
+		m[2][0] * m1.m[0][0] + m[2][1] * m1.m[1][0] + m[2][2] * m1.m[2][0] + m[2][3] * m1.m[3][0],
+		m[2][0] * m1.m[0][1] + m[2][1] * m1.m[1][1] + m[2][2] * m1.m[2][1] + m[2][3] * m1.m[3][1],
+		m[2][0] * m1.m[0][2] + m[2][1] * m1.m[1][2] + m[2][2] * m1.m[2][2] + m[2][3] * m1.m[3][2],
+		m[2][0] * m1.m[0][3] + m[2][1] * m1.m[1][3] + m[2][2] * m1.m[2][3] + m[2][3] * m1.m[3][3],
+							  								  						 
+		m[3][0] * m1.m[0][0] + m[3][1] * m1.m[1][0] + m[3][2] * m1.m[2][0] + m[3][3] * m1.m[3][0],
+		m[3][0] * m1.m[0][1] + m[3][1] * m1.m[1][1] + m[3][2] * m1.m[2][1] + m[3][3] * m1.m[3][1],
+		m[3][0] * m1.m[0][2] + m[3][1] * m1.m[1][2] + m[3][2] * m1.m[2][2] + m[3][3] * m1.m[3][2],
+		m[3][0] * m1.m[0][3] + m[3][1] * m1.m[1][3] + m[3][2] * m1.m[2][3] + m[3][3] * m1.m[3][3]
+	);
+}
+
+Matrix Matrix::operator*=(const Matrix& m1)
+{
+	*this = *this * m1;
+	return *this;
+}
+
 Matrix Matrix::Add(const Matrix& m1, const Matrix& m2)
 {
 	Matrix result;
@@ -227,6 +258,24 @@ Matrix Matrix::MakeRotateZ(float radian)
 	result.m[1][0] = -std::sinf(radian);
 	result.m[0][1] = std::sinf(radian);
 	result.m[1][1] = std::cosf(radian);
+
+	return result;
+}
+
+Matrix Matrix::MakeRotateXYZ(float roll, float pitch, float yaw)
+{
+	Matrix result = MakeIdentity();
+
+	return result * MakeRotateX(roll) * MakeRotateY(pitch) * MakeRotateZ(yaw);
+}
+
+Matrix Matrix::MakeAffine(const Vec3& scale, const Vec3& rotate, const Vec3& tlanslate)
+{
+	Matrix result = MakeIdentity();
+
+	result *= MakeScale(scale);
+	result *= MakeRotateXYZ(rotate.x, rotate.y, rotate.z);
+	result *= MakeTranslate(tlanslate);
 
 	return result;
 }

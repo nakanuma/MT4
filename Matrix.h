@@ -20,6 +20,10 @@ public:
 		float m20, float m21, float m22, float m23,
 		float m30, float m31, float m32, float m33);
 
+	Matrix operator * (const Matrix& m1);
+
+	Matrix operator *= (const Matrix& m1);
+
 	// 加法
 	static Matrix Add(const Matrix& m1, const Matrix& m2);
 	// 減法
@@ -38,10 +42,15 @@ public:
 	// 拡大縮小行列
 	static Matrix MakeScale(const Vec3& scale);
 
-	// X軸回転行列
+	// X軸回転行列(roll)
 	static Matrix MakeRotateX(float radian);
-	// Y軸回転行列
+	// Y軸回転行列(pitch)
 	static Matrix MakeRotateY(float radian);
-	// Z軸回転行列
+	// Z軸回転行列(yaw)
 	static Matrix MakeRotateZ(float radian);
+	// XYZ全てかけて回転
+	static Matrix MakeRotateXYZ(float roll, float pitch, float yaw);
+
+	// 3次元アフィン変換行列
+	static Matrix MakeAffine(const Vec3& scale, const Vec3& rotate, const Vec3& tlanslate);
 };
