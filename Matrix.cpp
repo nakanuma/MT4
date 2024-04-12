@@ -194,3 +194,39 @@ Matrix Matrix::MakeScale(const Vec3& scale)
 
 	return result;
 }
+
+Matrix Matrix::MakeRotateX(float radian)
+{
+	Matrix result = MakeIdentity();
+
+	result.m[1][1] = std::cosf(radian);
+	result.m[2][1] = -std::sinf(radian);
+	result.m[1][2] = std::sinf(radian);
+	result.m[2][2] = std::cosf(radian);
+
+	return result;
+}
+
+Matrix Matrix::MakeRotateY(float radian)
+{
+	Matrix result = MakeIdentity();
+
+	result.m[0][0] = std::cosf(radian);
+	result.m[2][0] = std::sinf(radian);
+	result.m[0][2] = -std::sinf(radian);
+	result.m[2][2] = std::cosf(radian);
+
+	return result;
+}
+
+Matrix Matrix::MakeRotateZ(float radian)
+{
+	Matrix result = MakeIdentity();
+
+	result.m[0][0] = std::cosf(radian);
+	result.m[1][0] = -std::sinf(radian);
+	result.m[0][1] = std::sinf(radian);
+	result.m[1][1] = std::cosf(radian);
+
+	return result;
+}

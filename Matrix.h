@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <cmath>
 #include "Vec3.h"
 
 class Matrix {
@@ -36,4 +37,11 @@ public:
 	static Matrix MakeTranslate(const Vec3& translate);
 	// 拡大縮小行列
 	static Matrix MakeScale(const Vec3& scale);
+
+	// X軸回転行列
+	static Matrix MakeRotateX(float radian);
+	// Y軸回転行列
+	static Matrix MakeRotateY(float radian);
+	// Z軸回転行列
+	static Matrix MakeRotateZ(float radian);
 };
