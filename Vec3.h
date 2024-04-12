@@ -30,5 +30,8 @@ public:
 
 	// 座標変換
 	static Vec3 Transform(const Vec3& vector, const Matrix& matrix);
+
+	// クロス積
+	static Vec3 Cross(const Vec3& v1, const Vec3& v2);
 };
 

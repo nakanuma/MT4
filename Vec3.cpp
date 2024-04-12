@@ -80,3 +80,12 @@ Vec3 Vec3::Transform(const Vec3& vector, const Matrix& matrix)
 
 	return result;
 }
+
+Vec3 Vec3::Cross(const Vec3& v1, const Vec3& v2)
+{
+	return Vec3(
+		(v1.y * v2.z) - (v1.z * v2.y),
+		(v1.z * v2.x) - (v1.x * v2.z),
+		(v1.x * v2.y) - (v1.y * v2.x)
+	);
+}

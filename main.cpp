@@ -2,6 +2,9 @@
 #include "Vec3.h"
 #include "Matrix.h"
 
+static const int kWindowWidth = 1280;
+static const int kWindowHeight = 720;
+
 static const int kRowHeight = 20;
 static const int kColumnWidth = 60;
 void VectorScreenPrintf(int x, int y, const Vec3& vector, const char* label) {
@@ -28,15 +31,26 @@ const char kWindowTitle[] = "LE2B_19_ナカヌマ_カツシ_MT3";
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// ライブラリの初期化
-	Novice::Initialize(kWindowTitle, 1280, 720);
+	Novice::Initialize(kWindowTitle, kWindowWidth, kWindowHeight);
 
 	// キー入力結果を受け取る箱
 	char keys[256] = {0};
 	char preKeys[256] = {0};
 
-	Matrix orthographicMatrix = Matrix::MakeOrthograph(-160.0f, 160.0f, 200.0f, 300.0f, 0.0f, 1000.0f);
-	Matrix perspectiveFovMatrix = Matrix::MakePerspectiveFov(0.63f, 1.33f, 0.1f, 1000.0f);
-	Matrix viewportMatrix = Matrix::MakeViewport(100.0f, 200.0f, 600.0f, 300.0f, 0.0f, 1.0f);
+	// クロス積の確認用
+	Vec3 v1 = { 1.2f, -3.9f, 2.5f };
+	Vec3 v2 = { 2.8f, 0.4f, -1.3f };
+	Vec3 cross = Vec3::Cross(v1, v2);
+
+	// 三角形で使用
+	Vec3 rotate{ 0.0f,0.0f,0.0f };
+	Vec3 translate{ 0.0f,0.0f,0.0f };
+	Vec3 cameraPosition{ 0.0f,0.0f,-0.5f };
+	const Vec3 kLocalVertices[3] = {
+		{640.0f, 180.0f, 0.1f},
+		{820.0f, 500.0f, 0.1f},
+		{460.0f, 500.0f, 0.1f}
+	};
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -51,6 +65,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 
+		// 各種行列の計算
+		Matrix worldMatrix = Matrix::MakeAffine({ 1.0f,1.0f,1.0f }, rotate, translate);
+		Matrix cameraMatrix = Matrix::MakeAffine({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, cameraPosition);
+		Matrix viewMatrix = Matrix::Inverse(cameraMatrix);
+		Matrix projectionMatrix = Matrix::MakePerspectiveFov(0.45f, float(kWindowWidth) / float(kWindowHeight), 0.1f, 100.0f);
+		Matrix worldViewProjectionMatrix = Matrix::Multiply(worldMatrix, Matrix::Multiply(viewMatrix, projectionMatrix));
+		Matrix viewportMatrix = Matrix::MakeViewport(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
+		Vec3 screenVertices[3];
+		for (uint32_t i = 0; i < 3; i++) {
+			Vec3 ndcVertex = Vec3::Transform(kLocalVertices[i], worldViewProjectionMatrix);
+			screenVertices[i] = Vec3::Transform(ndcVertex, viewportMatrix);
+		}
+
 		///
 		/// ↑更新処理ここまで
 		///
@@ -60,9 +87,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 
 		// 計算結果を表示
-		MatrixScreenPrintf(0, 0, orthographicMatrix, "orthographicMatrix");
-		MatrixScreenPrintf(0, kRowHeight * 5, perspectiveFovMatrix, "perspectiveFovMatrix");
-		MatrixScreenPrintf(0, kRowHeight * 10, viewportMatrix, "viewportMatrix");
+		VectorScreenPrintf(0, 0, cross, "Cross");
+
+		// 三角形を描画
+		Novice::DrawTriangle(
+			int(screenVertices[0].x), int(screenVertices[0].y),
+			int(screenVertices[1].x), int(screenVertices[1].y),
+			int(screenVertices[2].x), int(screenVertices[2].y),
+			RED,
+			kFillModeSolid
+		);
 
 		///
 		/// ↑描画処理ここまで
