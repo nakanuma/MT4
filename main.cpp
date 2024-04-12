@@ -34,10 +34,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = {0};
 	char preKeys[256] = {0};
 
-	Vec3 scale = { 1.2f, 0.79f, -2.1f };
-	Vec3 rotate = { 0.4f, 1.43f, -0.8f };
-	Vec3 translate = { 2.7f, -4.15f, 1.57f };
-	Matrix worldMatrix = Matrix::MakeAffine(scale, rotate, translate);
+	Matrix orthographicMatrix = Matrix::MakeOrthograph(-160.0f, 160.0f, 200.0f, 300.0f, 0.0f, 1000.0f);
+	Matrix perspectiveFovMatrix = Matrix::MakePerspectiveFov(0.63f, 1.33f, 0.1f, 1000.0f);
+	Matrix viewportMatrix = Matrix::MakeViewport(100.0f, 200.0f, 600.0f, 300.0f, 0.0f, 1.0f);
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -61,7 +60,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 
 		// 計算結果を表示
-		MatrixScreenPrintf(0, 0, worldMatrix, "worldMatrix");
+		MatrixScreenPrintf(0, 0, orthographicMatrix, "orthographicMatrix");
+		MatrixScreenPrintf(0, kRowHeight * 5, perspectiveFovMatrix, "perspectiveFovMatrix");
+		MatrixScreenPrintf(0, kRowHeight * 10, viewportMatrix, "viewportMatrix");
 
 		///
 		/// ↑描画処理ここまで

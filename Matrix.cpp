@@ -279,3 +279,37 @@ Matrix Matrix::MakeAffine(const Vec3& scale, const Vec3& rotate, const Vec3& tla
 
 	return result;
 }
+
+Matrix Matrix::MakePerspectiveFov(float fovY, float aspectRatio, float nearClip, float farClip)
+{
+	Matrix result = MakeIdentity();
+
+	result.m[1][1] = 1.0f / std::tanf(fovY / 2.0f);
+	result.m[0][0] = result.m[1][1] / aspectRatio;
+	result.m[2][2] = farClip / (farClip - nearClip);
+	result.m[3][2] = (-nearClip * farClip) / (farClip - nearClip);
+	result.m[2][3] = 1.0f;
+	result.m[3][3] = 0.0f;
+
+	return result;
+}
+
+Matrix Matrix::MakeOrthograph(float left, float top, float right, float bottom, float nearClip, float farClip)
+{
+	return Matrix(
+		2.0f / (right - left), 0.0f, 0.0f, 0.0f,
+		0.0f, 2.0f / (top - bottom), 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f / (farClip - nearClip), 0.0f,
+		(left + right) / (left - right), (top + bottom) / (bottom - top), nearClip / (nearClip - farClip), 1.0f
+	);
+}
+
+Matrix Matrix::MakeViewport(float left, float top, float width, float height, float minDepth, float maxDepth)
+{
+	return Matrix(
+		width / 2.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, -height / 2.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, maxDepth - minDepth, 0,
+		left + (width / 2.0f), top + (height / 2.0f), minDepth, 1.0f
+	);
+}

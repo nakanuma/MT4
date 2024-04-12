@@ -53,4 +53,11 @@ public:
 
 	// 3次元アフィン変換行列
 	static Matrix MakeAffine(const Vec3& scale, const Vec3& rotate, const Vec3& tlanslate);
+
+	// 透視投影行列
+	static Matrix MakePerspectiveFov(float fovY, float aspectRatio, float nearClip, float farClip);
+	// 正射影行列
+	static Matrix MakeOrthograph(float left, float top, float right, float bottom, float nearClip, float farClip);
+	// ビューポート変換行列
+	static Matrix MakeViewport(float left, float top, float width, float height, float minDepth, float maxDepth);
 };
