@@ -45,11 +45,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 三角形で使用
 	Vec3 rotate{ 0.0f,0.0f,0.0f };
 	Vec3 translate{ 0.0f,0.0f,0.0f };
-	Vec3 cameraPosition{ 0.0f,0.0f,-0.5f };
+	Vec3 cameraPosition{ 0.0f,0.0f,5.0f };
 	const Vec3 kLocalVertices[3] = {
-		{640.0f, 180.0f, 0.1f},
-		{820.0f, 500.0f, 0.1f},
-		{460.0f, 500.0f, 0.1f}
+		{0.0f, -0.5f, 0.0f},
+		{0.5f, 0.5f, 0.0f},
+		{-0.5f, 0.5f, 0.0f}
 	};
 
 	// ウィンドウの×ボタンが押されるまでループ
@@ -72,7 +72,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix projectionMatrix = Matrix::MakePerspectiveFov(0.45f, float(kWindowWidth) / float(kWindowHeight), 0.1f, 100.0f);
 		Matrix worldViewProjectionMatrix = Matrix::Multiply(worldMatrix, Matrix::Multiply(viewMatrix, projectionMatrix));
 		Matrix viewportMatrix = Matrix::MakeViewport(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
-		Vec3 screenVertices[3];
+		Vec3 screenVertices[3] = {};
 		for (uint32_t i = 0; i < 3; i++) {
 			Vec3 ndcVertex = Vec3::Transform(kLocalVertices[i], worldViewProjectionMatrix);
 			screenVertices[i] = Vec3::Transform(ndcVertex, viewportMatrix);
@@ -86,8 +86,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		// 計算結果を表示
+		// クロス積の確認用計算結果を表示
 		VectorScreenPrintf(0, 0, cross, "Cross");
+
+		// 三角形を前後左右に移動させる
+		if (keys[DIK_W]) {
+			translate.z += 0.03f;
+		}
+		if (keys[DIK_S]) {
+			translate.z -= 0.03f;
+		}
+		if (keys[DIK_A]) {
+			translate.x += 0.02f;
+		}
+		if (keys[DIK_D]) {
+			translate.x -= 0.02f;
+		}
+		// 三角形を回転させる
+		rotate.y += 0.03f;
 
 		// 三角形を描画
 		Novice::DrawTriangle(
@@ -97,6 +113,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			RED,
 			kFillModeSolid
 		);
+
+		// 三角形の頂点のスクリーン座標を表示
+		/*VectorScreenPrintf(0, kRowHeight, screenVertices[0], "v0");
+		VectorScreenPrintf(0, kRowHeight * 2, screenVertices[1], "v1");
+		VectorScreenPrintf(0, kRowHeight * 3, screenVertices[2], "v2");*/
 
 		///
 		/// ↑描画処理ここまで
