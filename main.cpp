@@ -105,19 +105,36 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 三角形を回転させる
 		rotate.y += 0.03f;
 
-		// 三角形を描画
-		Novice::DrawTriangle(
-			int(screenVertices[0].x), int(screenVertices[0].y),
-			int(screenVertices[1].x), int(screenVertices[1].y),
-			int(screenVertices[2].x), int(screenVertices[2].y),
-			RED,
-			kFillModeSolid
-		);
+		// 三角形の法線ベクトルを計算
+		Vec3 edge1 = Vec3::Subtract(screenVertices[1], screenVertices[0]);
+		Vec3 edge2 = Vec3::Subtract(screenVertices[2], screenVertices[1]);
+		Vec3 cross1 = Vec3::Cross(edge1, edge2);
+		Vec3 normal = Vec3::Normalize(cross1);
 
-		// 三角形の頂点のスクリーン座標を表示
+		// 視点ベクトルを計算
+		Vec3 viewVector = Vec3::Subtract(cameraPosition, kLocalVertices[0]);
+
+		// ドット積を計算
+		float dotProduct = Vec3::Dot(viewVector, normal);
+
+		// 三角形が表を向いているときのみ描画
+		if (dotProduct <= 0.0f) {
+			Novice::DrawTriangle(
+				int(screenVertices[0].x), int(screenVertices[0].y),
+				int(screenVertices[1].x), int(screenVertices[1].y),
+				int(screenVertices[2].x), int(screenVertices[2].y),
+				RED,
+				kFillModeSolid
+			);
+		}
+
+		// デバッグ用
 		/*VectorScreenPrintf(0, kRowHeight, screenVertices[0], "v0");
 		VectorScreenPrintf(0, kRowHeight * 2, screenVertices[1], "v1");
-		VectorScreenPrintf(0, kRowHeight * 3, screenVertices[2], "v2");*/
+		VectorScreenPrintf(0, kRowHeight * 3, screenVertices[2], "v2");
+
+		VectorScreenPrintf(0, kRowHeight * 4, rotate, "rotate");
+		Novice::ScreenPrintf(0, kRowHeight * 5, "%f", dotProduct);*/
 
 		///
 		/// ↑描画処理ここまで
