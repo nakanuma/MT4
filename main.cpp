@@ -1,6 +1,7 @@
 #include <Novice.h>
 #include "Vec3.h"
 #include "Matrix.h"
+#include "MathUtil.h"
 
 static const int kWindowWidth = 1280;
 static const int kWindowHeight = 720;
@@ -37,20 +38,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = {0};
 	char preKeys[256] = {0};
 
-	// クロス積の確認用
-	Vec3 v1 = { 1.2f, -3.9f, 2.5f };
-	Vec3 v2 = { 2.8f, 0.4f, -1.3f };
-	Vec3 cross = Vec3::Cross(v1, v2);
-
-	// 三角形で使用
-	Vec3 rotate{ 0.0f,0.0f,0.0f };
-	Vec3 translate{ 0.0f,0.0f,0.0f };
 	Vec3 cameraPosition{ 0.0f,0.0f,5.0f };
-	const Vec3 kLocalVertices[3] = {
-		{0.0f, -0.5f, 0.0f},
-		{0.5f, 0.5f, 0.0f},
-		{-0.5f, 0.5f, 0.0f}
-	};
+	Vec3 cameraTranslate{ 0.0f, 1.0f, -6.49f };
+	Vec3 cameraRotate{ 0.26f, 0.0f, 0.0f };
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -66,17 +56,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 
 		// 各種行列の計算
-		Matrix worldMatrix = Matrix::MakeAffine({ 1.0f,1.0f,1.0f }, rotate, translate);
+		Matrix worldMatrix = Matrix::MakeAffine({ 1.0f,1.0f,1.0f }, cameraRotate, cameraTranslate);
 		Matrix cameraMatrix = Matrix::MakeAffine({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, cameraPosition);
 		Matrix viewMatrix = Matrix::Inverse(cameraMatrix);
 		Matrix projectionMatrix = Matrix::MakePerspectiveFov(0.45f, float(kWindowWidth) / float(kWindowHeight), 0.1f, 100.0f);
 		Matrix worldViewProjectionMatrix = Matrix::Multiply(worldMatrix, Matrix::Multiply(viewMatrix, projectionMatrix));
 		Matrix viewportMatrix = Matrix::MakeViewport(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
-		Vec3 screenVertices[3] = {};
-		for (uint32_t i = 0; i < 3; i++) {
-			Vec3 ndcVertex = Vec3::Transform(kLocalVertices[i], worldViewProjectionMatrix);
-			screenVertices[i] = Vec3::Transform(ndcVertex, viewportMatrix);
-		}
+
+		// グリッドを表示
+		DrawGrid(worldViewProjectionMatrix, viewportMatrix);
 
 		///
 		/// ↑更新処理ここまで
@@ -85,56 +73,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓描画処理ここから
 		///
-
-		// クロス積の確認用計算結果を表示
-		VectorScreenPrintf(0, 0, cross, "Cross");
-
-		// 三角形を前後左右に移動させる
-		if (keys[DIK_W]) {
-			translate.z += 0.03f;
-		}
-		if (keys[DIK_S]) {
-			translate.z -= 0.03f;
-		}
-		if (keys[DIK_A]) {
-			translate.x += 0.02f;
-		}
-		if (keys[DIK_D]) {
-			translate.x -= 0.02f;
-		}
-		// 三角形を回転させる
-		rotate.y += 0.03f;
-
-		// 三角形の法線ベクトルを計算
-		Vec3 edge1 = Vec3::Subtract(screenVertices[1], screenVertices[0]);
-		Vec3 edge2 = Vec3::Subtract(screenVertices[2], screenVertices[1]);
-		Vec3 cross1 = Vec3::Cross(edge1, edge2);
-		Vec3 normal = Vec3::Normalize(cross1);
-
-		// 視点ベクトルを計算
-		Vec3 viewVector = Vec3::Subtract(cameraPosition, kLocalVertices[0]);
-
-		// ドット積を計算
-		float dotProduct = Vec3::Dot(viewVector, normal);
-
-		// 三角形が表を向いているときのみ描画
-		if (dotProduct <= 0.0f) {
-			Novice::DrawTriangle(
-				int(screenVertices[0].x), int(screenVertices[0].y),
-				int(screenVertices[1].x), int(screenVertices[1].y),
-				int(screenVertices[2].x), int(screenVertices[2].y),
-				RED,
-				kFillModeSolid
-			);
-		}
-
-		// デバッグ用
-		/*VectorScreenPrintf(0, kRowHeight, screenVertices[0], "v0");
-		VectorScreenPrintf(0, kRowHeight * 2, screenVertices[1], "v1");
-		VectorScreenPrintf(0, kRowHeight * 3, screenVertices[2], "v2");
-
-		VectorScreenPrintf(0, kRowHeight * 4, rotate, "rotate");
-		Novice::ScreenPrintf(0, kRowHeight * 5, "%f", dotProduct);*/
 
 		///
 		/// ↑描画処理ここまで

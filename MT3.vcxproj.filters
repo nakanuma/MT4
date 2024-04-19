@@ -47,6 +47,12 @@
     <ClCompile Include="Vec3.cpp">
       <Filter>Math</Filter>
     </ClCompile>
+    <ClCompile Include="MathUtil.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Vec4.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\KamataEngine\DirectXGame\audio\Audio.h">
@@ -124,6 +130,12 @@
       <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="Vec3.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="MathUtil.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Vec4.h">
       <Filter>Math</Filter>
     </ClInclude>
   </ItemGroup>
