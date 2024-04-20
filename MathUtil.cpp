@@ -85,7 +85,7 @@ void DrawSphere(const Sphere& sphere, const Matrix& viewProjectionMatrix, const 
 			Vec3 screenA = WorldToScreen(a, viewProjectionMatrix, viewportMatrix);
 			Vec3 screenB = WorldToScreen(b, viewProjectionMatrix, viewportMatrix);
 			Vec3 screenC = WorldToScreen(c, viewProjectionMatrix, viewportMatrix);
-			// ab,bcで線を引く
+			// ab,acで線を引く
 			Novice::DrawLine(
 				static_cast<int>(screenA.x),
 				static_cast<int>(screenA.y),
