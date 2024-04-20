@@ -1,4 +1,5 @@
 #include <Novice.h>
+#include <imgui.h>
 #include "Vec3.h"
 #include "Matrix.h"
 #include "MathUtil.h"
@@ -38,9 +39,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = {0};
 	char preKeys[256] = {0};
 
-	Vec3 cameraPosition{ 0.0f,0.0f,5.0f };
-	Vec3 cameraTranslate{ 0.0f, 1.0f, -6.49f };
+	Vec3 cameraTranslate{ 0.0f, 1.9f, -6.49f };
 	Vec3 cameraRotate{ 0.26f, 0.0f, 0.0f };
+
+	Sphere sphere{
+		{0.0f, 0.0f, 0.0f},
+		1.0f
+	};
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -56,15 +61,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 
 		// 各種行列の計算
-		Matrix worldMatrix = Matrix::MakeAffine({ 1.0f,1.0f,1.0f }, cameraRotate, cameraTranslate);
-		Matrix cameraMatrix = Matrix::MakeAffine({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, cameraPosition);
+		Matrix cameraMatrix = Matrix::MakeAffine({ 1.0f,1.0f,1.0f }, cameraRotate, cameraTranslate);
 		Matrix viewMatrix = Matrix::Inverse(cameraMatrix);
 		Matrix projectionMatrix = Matrix::MakePerspectiveFov(0.45f, float(kWindowWidth) / float(kWindowHeight), 0.1f, 100.0f);
-		Matrix worldViewProjectionMatrix = Matrix::Multiply(worldMatrix, Matrix::Multiply(viewMatrix, projectionMatrix));
+		Matrix viewProjectionMatrix = Matrix::Multiply(viewMatrix, projectionMatrix);
 		Matrix viewportMatrix = Matrix::MakeViewport(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
 		// グリッドを表示
-		DrawGrid(worldViewProjectionMatrix, viewportMatrix);
+		DrawGrid(viewProjectionMatrix, viewportMatrix);
+
+		// 球体を表示
+		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, BLACK, 20);
+
+		ImGui::Begin("Window");
+		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
+		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
+		ImGui::DragFloat3("SphereCenter", &sphere.center.x, 0.01f);
+		ImGui::DragFloat("SphereRadius", &sphere.radius, 0.01f);
+		ImGui::End();
 
 		///
 		/// ↑更新処理ここまで
