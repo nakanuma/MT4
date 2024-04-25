@@ -30,14 +30,24 @@ void DrawGrid(const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix)
 		// 正規化デバイス座標系->スクリーン座標系
 		Vec3 screenStartPos = Vec3::Transform(ndcStartPos, viewportMatrix);
 		Vec3 screenEndPos = Vec3::Transform(ndcEndPos, viewportMatrix);
-		// 描画
-		Novice::DrawLine(
-			static_cast<int>(screenStartPos.x),
-			static_cast<int>(screenStartPos.y),
-			static_cast<int>(screenEndPos.x),
-			static_cast<int>(screenEndPos.y),
-			WHITE
-		);
+		if (xIndex == 5) {
+			// 描画
+			Novice::DrawLine(
+				static_cast<int>(screenStartPos.x),
+				static_cast<int>(screenStartPos.y),
+				static_cast<int>(screenEndPos.x),
+				static_cast<int>(screenEndPos.y),
+				BLACK
+			);
+		} else {
+			Novice::DrawLine(
+				static_cast<int>(screenStartPos.x),
+				static_cast<int>(screenStartPos.y),
+				static_cast<int>(screenEndPos.x),
+				static_cast<int>(screenEndPos.y),
+				WHITE
+			);
+		}
 	}
 	// 左から右も同じように順々引いていく
 	for (uint32_t zIndex = 0; zIndex <= kSubdivision; ++zIndex) {
@@ -52,13 +62,23 @@ void DrawGrid(const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix)
 		Vec3 screenStartPos = Vec3::Transform(ndcStartPos, viewportMatrix);
 		Vec3 screenEndPos = Vec3::Transform(ndcEndPos, viewportMatrix);
 		// 描画
-		Novice::DrawLine(
-			static_cast<int>(screenStartPos.x),
-			static_cast<int>(screenStartPos.y),
-			static_cast<int>(screenEndPos.x),
-			static_cast<int>(screenEndPos.y),
-			WHITE
-		);
+		if (zIndex == 5) {
+			Novice::DrawLine(
+				static_cast<int>(screenStartPos.x),
+				static_cast<int>(screenStartPos.y),
+				static_cast<int>(screenEndPos.x),
+				static_cast<int>(screenEndPos.y),
+				BLACK
+			);
+		} else {
+			Novice::DrawLine(
+				static_cast<int>(screenStartPos.x),
+				static_cast<int>(screenStartPos.y),
+				static_cast<int>(screenEndPos.x),
+				static_cast<int>(screenEndPos.y),
+				WHITE
+			);
+		}
 	}
 }
 
@@ -112,4 +132,24 @@ Vec3 WorldToScreen(const Vec3& worldCoordinate,const Matrix& viewProjectionMatri
 	Vec3 screen = Vec3::Transform(ndc, viewportMatrix);
 
 	return screen;
+}
+
+void VectorScreenPrintf(int x, int y, const Vec3& vector, const char* label)
+{
+	Novice::ScreenPrintf(x, y, "%.02f", vector.x);
+	Novice::ScreenPrintf(x + kColumnWidth, y, "%.02f", vector.y);
+	Novice::ScreenPrintf(x + kColumnWidth * 2, y, "%.02f", vector.z);
+	Novice::ScreenPrintf(x + kColumnWidth * 3, y, "%s", label);
+}
+
+void MatrixScreenPrintf(int x, int y, const Matrix& matrix, const char* label)
+{
+	Novice::ScreenPrintf(x, y, "%s", label);
+	for (int row = 0; row < 4; ++row) {
+		for (int column = 0; column < 4; ++column) {
+			Novice::ScreenPrintf(
+				x + column * kColumnWidth, y + kRowHeight + (row * kRowHeight), "%6.02f", matrix.m[row][column]
+			);
+		}
+	}
 }
