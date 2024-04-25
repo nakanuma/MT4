@@ -22,13 +22,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Vec3 cameraTranslate{ 0.0f, 1.9f, -6.49f };
 	Vec3 cameraRotate{ 0.26f, 0.0f, 0.0f };
 
+	// 球の情報
+	Sphere sphere1{ {0.0f, 0.0f, 0.0f}, 1.0f };
+	Sphere sphere2{ {2.0f, 0.0f, 0.0f}, 0.5f };
+	uint32_t sphereColor = WHITE;
 
-	// 正射影ベクトルと最近傍点の計算が正しいか確認するための値
-	Segment segment{ {-2.0f, -1.0f, 0.0f}, {3.0f, 2.0f, 2.0f} };
-	Vec3 point{ -1.5f, 0.6f, 0.6f };
-
-	/*Vec3 project = Vec3::Project(Vec3::Subtract(point, segment.origin), segment.diff);
-	Vec3 closestPoint = Vec3::ClosestPoint(point, segment);*/
+	// マウスの前回の位置とクリックのフラグ
+	int prevMousePosX = 0, prevMousePosY = 0;
+	bool isFirstRightClick = true;
+	bool isFirstMiddleClick = true;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -43,6 +45,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 
+		// マウスでカメラの操作を行う（右クリック:回転 / 中クリック:移動 / ホイール:前後）
+		CameraControl(cameraTranslate, cameraRotate, prevMousePosX, prevMousePosY, isFirstRightClick, isFirstMiddleClick);
+
 		// 各種行列の計算
 		Matrix cameraMatrix = Matrix::MakeAffine({ 1.0f,1.0f,1.0f }, cameraRotate, cameraTranslate);
 		Matrix viewMatrix = Matrix::Inverse(cameraMatrix);
@@ -50,16 +55,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix viewProjectionMatrix = Matrix::Multiply(viewMatrix, projectionMatrix);
 		Matrix viewportMatrix = Matrix::MakeViewport(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
-		// 正射影ベクトルと最近傍点の計算
-		Vec3 project = Vec3::Project(Vec3::Subtract(point, segment.origin), segment.diff);
-		Vec3 closestPoint = Vec3::ClosestPoint(point, segment);
+		// 球同士が衝突している場合、球1の色を変更する
+		if (IsCollision(sphere1, sphere2)) {
+			sphereColor = RED;
+		} else {
+			sphereColor = WHITE;
+		}
 
 		// ImGui
 		ImGui::Begin("Window");
-		ImGui::InputFloat3("Point", &point.x);
-		ImGui::InputFloat3("Segment origin", &segment.origin.x);
-		ImGui::InputFloat3("Segment diff", &segment.diff.x);
-		ImGui::InputFloat3("Project", &project.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
+		ImGui::DragFloat3("Sphere1.Center", &sphere1.center.x, 0.1f);
+		ImGui::DragFloat("Sphere1.Radius", &sphere1.radius, 0.1f);
+		ImGui::DragFloat3("Sphere2.Center", &sphere2.center.x, 0.1f);
+		ImGui::DragFloat("Sphere2.Radius", &sphere2.radius, 0.1f);
 		ImGui::End();
 
 		///
@@ -70,21 +78,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		// 線分の描画
-		Vec3 start = Vec3::Transform(Vec3::Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
-		Vec3 end = Vec3::Transform(Vec3::Transform(Vec3::Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
-		Novice::DrawLine(
-			static_cast<int>(start.x),
-			static_cast<int>(start.y),
-			static_cast<int>(end.x),
-			static_cast<int>(end.y),
-			WHITE);
-
-		// 点を描画
-		Sphere pointSphere{ point, 0.01f }; // 1cmの球を描画
-		Sphere closestPointSphere{ closestPoint, 0.01f };
-		DrawSphere(pointSphere, viewProjectionMatrix, viewportMatrix, RED, 20);
-		DrawSphere(closestPointSphere, viewProjectionMatrix, viewportMatrix, BLACK, 20);
+		// 球の描画
+		DrawSphere(sphere1, viewProjectionMatrix, viewportMatrix, sphereColor, 20); // 球1
+		DrawSphere(sphere2, viewProjectionMatrix, viewportMatrix, WHITE, 20); // 球2
 
 		// グリッドを描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);

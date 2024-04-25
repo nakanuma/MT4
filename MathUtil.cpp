@@ -134,6 +134,18 @@ Vec3 WorldToScreen(const Vec3& worldCoordinate,const Matrix& viewProjectionMatri
 	return screen;
 }
 
+bool IsCollision(const Sphere& s1, const Sphere& s2)
+{
+	// 2つの球の中心点間の距離を求める
+	float distance = Vec3::Length(Vec3::Subtract(s2.center, s1.center));
+	// 半径の合計よりも短ければ衝突
+	if (distance <= s1.radius + s2.radius) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
 void VectorScreenPrintf(int x, int y, const Vec3& vector, const char* label)
 {
 	Novice::ScreenPrintf(x, y, "%.02f", vector.x);
@@ -151,5 +163,74 @@ void MatrixScreenPrintf(int x, int y, const Matrix& matrix, const char* label)
 				x + column * kColumnWidth, y + kRowHeight + (row * kRowHeight), "%6.02f", matrix.m[row][column]
 			);
 		}
+	}
+}
+
+void CameraControl(Vec3& cameraTranslate, Vec3& cameraRotate, int& prevMousePosX, int& prevMousePosY, bool& isFirstRightClick, bool& isFirstMiddleClick)
+{
+	// 右クリックが押されている場合（カメラの回転）
+	if (Novice::IsPressMouse(1)) {
+		// マウスの位置を取得
+		int mousePosX, mousePosY;
+		Novice::GetMousePosition(&mousePosX, &mousePosY);
+
+		// 初回クリックの場合
+		if (isFirstRightClick) {
+			// マウスの現在位置を前回の位置として保存
+			prevMousePosX = mousePosX;
+			prevMousePosY = mousePosY;
+			isFirstRightClick = false;
+		}
+
+		// マウスの移動量を計算
+		int dx = mousePosX - prevMousePosX;
+		int dy = mousePosY - prevMousePosY;
+		isFirstRightClick = false;
+
+		// カメラの回転を更新
+		cameraRotate.y += static_cast<float>(dx) * 0.001f;
+		cameraRotate.x += static_cast<float>(dy) * 0.001f;
+
+		// マウスの現在位置を前回の位置として保存
+		prevMousePosX = mousePosX;
+		prevMousePosY = mousePosY;
+	} else {
+		// 右クリックが離された場合、次回のクリックで初期化するためのフラグを設定
+		isFirstRightClick = true;
+	}
+
+	// 左クリックが押されている場合（カメラの移動）
+	if (Novice::IsPressMouse(2)) {
+		// マウスの位置を取得
+		int mousePosX, mousePosY;
+		Novice::GetMousePosition(&mousePosX, &mousePosY);
+
+		if (isFirstMiddleClick) {
+			// 初回の左クリックの場合、現在の位置を前回の位置として保存
+			prevMousePosX = mousePosX;
+			prevMousePosY = mousePosY;
+			isFirstMiddleClick = false;
+		}
+
+		// マウスの移動量を計算
+		int dx = mousePosX - prevMousePosX;
+		int dy = mousePosY - prevMousePosY;
+
+		// カメラのTranslateを更新
+		cameraTranslate.x -= static_cast<float>(dx) * 0.01f;
+		cameraTranslate.y += static_cast<float>(dy) * 0.01f;
+
+		// マウスの現在位置を前回の位置として保存
+		prevMousePosX = mousePosX;
+		prevMousePosY = mousePosY;
+	} else {
+		// 左クリックが離された場合、次回のクリックで初期化するためのフラグを設定
+		isFirstMiddleClick = true;
+	}
+	// ホイールスクロールでカメラの前後を変更
+	int wheelDelta = Novice::GetWheel();
+	if (wheelDelta != 0) {
+		cameraTranslate.z += static_cast<float>(wheelDelta) * 0.001f;
+		wheelDelta = 0;
 	}
 }
