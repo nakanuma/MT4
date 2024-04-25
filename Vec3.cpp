@@ -1,7 +1,8 @@
 ﻿#include <assert.h>
 #include "Vec3.h"
 #include "Matrix.h"
-
+#include <iostream>
+#include <algorithm>
 
 Vec3::Vec3()
 {
@@ -95,10 +96,13 @@ Vec3 Vec3::Project(const Vec3& v1, const Vec3& v2)
 {
 	// v1とv2の内積を求める
 	float dot = Dot(v1, v2);
+
 	// v2のノルムを求める
 	float norm = Length(v2);
+
 	// 求めた内積をv2のノルムの2乗で割る
 	float scalar = dot / (norm * norm);
+
 	// スカラーを用いて正射影ベクトルを求める
 	Vec3 project = Multiply(scalar, v2);
 
@@ -107,10 +111,16 @@ Vec3 Vec3::Project(const Vec3& v1, const Vec3& v2)
 
 Vec3 Vec3::ClosestPoint(const Vec3& point, const Segment& segment)
 {
+	// 点から線分への始点ベクトルを計算
+	Vec3 toStart = Subtract(point, segment.origin);
+
 	// 線分の方向ベクトルに対する正射影ベクトルを計算
-	Vec3 project = Project(Subtract(point, segment.origin), segment.diff);
-	// 最近接点を求める
-	Vec3 closestPoint = Add(segment.origin, project);
+	float t = Dot(toStart, segment.diff) / Dot(segment.diff, segment.diff);
+
+	// tが0未満の場合は始点、1以上の場合は終点、それ以外の場合は線分上の点を計算
+	t = std::clamp(t, 0.0f, 1.0f);
+
+	Vec3 closestPoint = Add(segment.origin, Multiply(t, segment.diff));
 
 	return closestPoint;
 }
