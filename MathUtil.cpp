@@ -124,6 +124,53 @@ void DrawSphere(const Sphere& sphere, const Matrix& viewProjectionMatrix, const 
 	}
 }
 
+Vec3 Perpendicular(const Vec3& vector)
+{
+	if (vector.x != 0.0f || vector.y != 0.0f) {
+		return { -vector.y, -vector.x, 0.0f };
+	}
+	return { 0.0f, -vector.z, vector.y };
+}
+
+void DrawPlane(const Plane& plane, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix, uint32_t color)
+{
+	// 中心点を求める
+	Vec3 center = Vec3::Multiply(plane.distance, plane.normal);
+	Vec3 perpendiculars[4];
+	perpendiculars[0] = Vec3::Normalize(Perpendicular(plane.normal)); // 法線と垂直なベクトルを1つ求める
+	perpendiculars[1] = { -perpendiculars[0].x, -perpendiculars[0].y, -perpendiculars[0].z }; // [0]の逆ベクトルを求める
+	perpendiculars[2] = Vec3::Cross(plane.normal, perpendiculars[0]); // [0]と法線とのクロス積を求める
+	perpendiculars[3] = { -perpendiculars[2].x, -perpendiculars[2].y, -perpendiculars[2].z }; // [2]の逆ベクトルを求める
+	// 4頂点を求める
+	Vec3 points[4];
+	for (int32_t index = 0; index < 4; ++index) {
+		Vec3 extend = Vec3::Multiply(2.0f, perpendiculars[index]);
+		Vec3 point = Vec3::Add(center, extend);
+		points[index] = Vec3::Transform(Vec3::Transform(point, viewProjectionMatrix), viewportMatrix);
+	}
+	// pointsをそれぞれ結んで矩形を描画する
+	Novice::DrawLine(
+		static_cast<int>(points[0].x), static_cast<int>(points[0].y),
+		static_cast<int>(points[2].x), static_cast<int>(points[2].y),
+		color
+	);
+	Novice::DrawLine(
+		static_cast<int>(points[1].x), static_cast<int>(points[1].y),
+		static_cast<int>(points[2].x), static_cast<int>(points[2].y),
+		color
+	);
+	Novice::DrawLine(
+		static_cast<int>(points[1].x), static_cast<int>(points[1].y),
+		static_cast<int>(points[3].x), static_cast<int>(points[3].y),
+		color
+	);
+	Novice::DrawLine(
+		static_cast<int>(points[3].x), static_cast<int>(points[3].y),
+		static_cast<int>(points[0].x), static_cast<int>(points[0].y),
+		color
+	);
+}
+
 Vec3 WorldToScreen(const Vec3& worldCoordinate,const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix)
 {
 	// ワールド座標系->正規化デバイス座標系
@@ -145,6 +192,17 @@ bool IsCollision(const Sphere& s1, const Sphere& s2)
 		return false;
 	}
 }
+
+//bool IsCollision(const Sphere& sphere, const Plane& plane)
+//{
+//	
+//
+//	if (distance <= sphere.radius) {
+//		return true;
+//	} else {
+//		return false;
+//	}
+//}
 
 void VectorScreenPrintf(int x, int y, const Vec3& vector, const char* label)
 {

@@ -22,15 +22,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Vec3 cameraTranslate{ 0.0f, 1.9f, -6.49f };
 	Vec3 cameraRotate{ 0.26f, 0.0f, 0.0f };
 
-	// 球の情報
-	Sphere sphere1{ {0.0f, 0.0f, 0.0f}, 1.0f };
-	Sphere sphere2{ {2.0f, 0.0f, 0.0f}, 0.5f };
-	uint32_t sphereColor = WHITE;
-
 	// マウスの前回の位置とクリックのフラグ
 	int prevMousePosX = 0, prevMousePosY = 0;
 	bool isFirstRightClick = true;
 	bool isFirstMiddleClick = true;
+
+	// 平面の情報
+	Plane plane{ {0.0f, 1.0f, 0.0f}, 1.0f };
+	// 球の情報
+	Sphere sphere{ {0.0f, 0.0f, 0.0f}, 0.5f };
+	uint32_t color = WHITE;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -55,19 +56,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix viewProjectionMatrix = Matrix::Multiply(viewMatrix, projectionMatrix);
 		Matrix viewportMatrix = Matrix::MakeViewport(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
-		// 球同士が衝突している場合、球1の色を変更する
-		if (IsCollision(sphere1, sphere2)) {
-			sphereColor = RED;
-		} else {
-			sphereColor = WHITE;
-		}
+		//// 平面と球の衝突判定
+		//if (IsCollision(sphere, plane)) {
+		//	color = RED;
+		//} else {
+		//	color = WHITE;
+		//}
 
 		// ImGui
 		ImGui::Begin("Window");
-		ImGui::DragFloat3("Sphere1.Center", &sphere1.center.x, 0.1f);
-		ImGui::DragFloat("Sphere1.Radius", &sphere1.radius, 0.1f);
-		ImGui::DragFloat3("Sphere2.Center", &sphere2.center.x, 0.1f);
-		ImGui::DragFloat("Sphere2.Radius", &sphere2.radius, 0.1f);
+		ImGui::DragFloat3("Sphere Center", &sphere.center.x, 0.1f);
+		ImGui::DragFloat("Sphere Radius", &sphere.radius, 0.1f);
+		ImGui::DragFloat3("Plane Normal", &plane.normal.x, 0.1f);
+		plane.normal = Vec3::Normalize(plane.normal); // 法線を正規化
+		ImGui::DragFloat("Plane Distance", &plane.distance, 0.1f);
 		ImGui::End();
 
 		///
@@ -78,9 +80,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		// 球の描画
-		DrawSphere(sphere1, viewProjectionMatrix, viewportMatrix, sphereColor, 20); // 球1
-		DrawSphere(sphere2, viewProjectionMatrix, viewportMatrix, WHITE, 20); // 球2
+		// 平面の描画を行う
+		DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
+		// 球の描画を行う
+		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, color, 20);
 
 		// グリッドを描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
