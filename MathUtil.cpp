@@ -127,7 +127,7 @@ void DrawSphere(const Sphere& sphere, const Matrix& viewProjectionMatrix, const 
 Vec3 Perpendicular(const Vec3& vector)
 {
 	if (vector.x != 0.0f || vector.y != 0.0f) {
-		return { -vector.y, -vector.x, 0.0f };
+		return { -vector.y, vector.x, 0.0f };
 	}
 	return { 0.0f, -vector.z, vector.y };
 }
@@ -193,16 +193,21 @@ bool IsCollision(const Sphere& s1, const Sphere& s2)
 	}
 }
 
-//bool IsCollision(const Sphere& sphere, const Plane& plane)
-//{
-//	
-//
-//	if (distance <= sphere.radius) {
-//		return true;
-//	} else {
-//		return false;
-//	}
-//}
+bool IsCollision(const Sphere& sphere, const Plane& plane)
+{
+	// 球の中心と平面の距離を計算
+	float numerator = (plane.normal.x * sphere.center.x) + (plane.normal.y * sphere.center.y) + (plane.normal.z * sphere.center.z) + plane.distance;
+	float denominator = sqrtf(powf(plane.normal.x, 2.0f) + powf(plane.normal.y, 2) + powf(plane.normal.z, 2));
+
+	float distance = numerator / denominator;
+
+	// 球の中心と平面の距離が球の半径以下だったら衝突
+	if (std::fabs(distance) <= sphere.radius) {
+		return true;
+	} else {
+		return false;
+	}
+}
 
 void VectorScreenPrintf(int x, int y, const Vec3& vector, const char* label)
 {

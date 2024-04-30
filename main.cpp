@@ -56,20 +56,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix viewProjectionMatrix = Matrix::Multiply(viewMatrix, projectionMatrix);
 		Matrix viewportMatrix = Matrix::MakeViewport(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
-		//// 平面と球の衝突判定
-		//if (IsCollision(sphere, plane)) {
-		//	color = RED;
-		//} else {
-		//	color = WHITE;
-		//}
+		// 平面と球の衝突判定
+		if (IsCollision(sphere, plane)) {
+			color = RED;
+		} else {
+			color = WHITE;
+		}
 
 		// ImGui
 		ImGui::Begin("Window");
-		ImGui::DragFloat3("Sphere Center", &sphere.center.x, 0.1f);
-		ImGui::DragFloat("Sphere Radius", &sphere.radius, 0.1f);
-		ImGui::DragFloat3("Plane Normal", &plane.normal.x, 0.1f);
+		ImGui::DragFloat3("Sphere Center", &sphere.center.x, 0.01f);
+		ImGui::DragFloat("Sphere Radius", &sphere.radius, 0.01f);
+		ImGui::DragFloat3("Plane Normal", &plane.normal.x, 0.01f);
 		plane.normal = Vec3::Normalize(plane.normal); // 法線を正規化
-		ImGui::DragFloat("Plane Distance", &plane.distance, 0.1f);
+		ImGui::DragFloat("Plane Distance", &plane.distance, 0.01f);
 		ImGui::End();
 
 		///
