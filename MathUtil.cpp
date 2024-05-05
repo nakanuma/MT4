@@ -196,7 +196,7 @@ bool IsCollision(const Sphere& s1, const Sphere& s2)
 bool IsCollision(const Sphere& sphere, const Plane& plane)
 {
 	// 球の中心と平面の距離を計算
-	float numerator = (plane.normal.x * sphere.center.x) + (plane.normal.y * sphere.center.y) + (plane.normal.z * sphere.center.z) + plane.distance;
+	float numerator = Vec3::Dot(plane.normal, sphere.center) - plane.distance;
 	float denominator = sqrtf(powf(plane.normal.x, 2.0f) + powf(plane.normal.y, 2) + powf(plane.normal.z, 2));
 
 	float distance = numerator / denominator;
