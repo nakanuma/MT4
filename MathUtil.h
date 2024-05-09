@@ -21,6 +21,10 @@ struct Plane {
 	float distance; // 距離
 };
 
+///
+///	描画
+/// 
+
 // グリッドの描画
 void  DrawGrid(const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix);
 // 球の描画
@@ -32,10 +36,20 @@ void DrawPlane(const Plane& plane, const Matrix& viewProjectionMatrix, const Mat
 // ワールド座標->スクリーン座標に変換
 Vec3 WorldToScreen(const Vec3& worldCoordinate, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix);
 
+///
+///	衝突判定
+/// 
+
 // 球同士の衝突判定
 bool IsCollision(const Sphere& s1, const Sphere& s2);
 // 球と平面の衝突判定
 bool IsCollision(const Sphere& sphere, const Plane& plane);
+// 線分と平面の衝突判定
+bool IsCollision(const Segment& segment, const Plane& plane);
+
+///
+///	便利系
+/// 
 
 // Vector3を画面上に表示
 void VectorScreenPrintf(int x, int y, const Vec3& vector, const char* label);

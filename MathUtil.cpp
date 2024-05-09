@@ -209,6 +209,27 @@ bool IsCollision(const Sphere& sphere, const Plane& plane)
 	}
 }
 
+bool IsCollision(const Segment& segment, const Plane& plane)
+{
+	// 平面の法線ベクトルと線分の差分ベクトルの内積を計算
+	float dot = Vec3::Dot(plane.normal, segment.diff);
+
+	// dotが0の場合、平行のため衝突はしない
+	if (dot == 0.0f) {
+		return false;
+	}
+
+	// tを求める
+	float t = (plane.distance - Vec3::Dot(segment.origin, plane.normal)) / dot;
+
+	// 衝突点が線分上にあるかを判定する
+	if (t >= 0.0f && t <= 1.0f) {
+		return true;
+	}
+
+	return false;
+}
+
 void VectorScreenPrintf(int x, int y, const Vec3& vector, const char* label)
 {
 	Novice::ScreenPrintf(x, y, "%.02f", vector.x);
