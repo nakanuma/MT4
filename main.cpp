@@ -27,7 +27,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	bool isFirstRightClick = true;
 	bool isFirstMiddleClick = true;
 
-	// 
+	// AABBの情報
 	AABB aabb1{
 		.min{-0.5f, -0.5f, -0.5f},
 		.max{0.0f, 0.0f, 0.0f}
@@ -35,9 +35,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	uint32_t color = WHITE;
 
-	AABB aabb2{
-		.min{0.2f, 0.2f, 0.2f},
-		.max{1.0f, 1.0f, 1.0f}
+	// 球の情報
+	Sphere sphere{
+		{1.0f, 0.0f, 0.0f},
+		0.5f
 	};
 	
 	// ウィンドウの×ボタンが押されるまでループ
@@ -65,10 +66,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// AABBのminとmaxの入れ替わりを防止
 		PreventionSwtichMinMax(aabb1);
-		PreventionSwtichMinMax(aabb2);
 
-		// AABB同士の衝突判定
-		if (IsCollision(aabb1, aabb2)) {
+		// AABBと球の衝突判定
+		if (IsCollision(aabb1, sphere)) {
 			color = RED;
 		} else {
 			color = WHITE;
@@ -79,8 +79,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		ImGui::DragFloat3("aabb1.min", &aabb1.min.x, 0.01f);
 		ImGui::DragFloat3("aabb1.max", &aabb1.max.x, 0.01f);
-		ImGui::DragFloat3("aabb2.min", &aabb2.min.x, 0.01f);
-		ImGui::DragFloat3("aabb2.max", &aabb2.max.x, 0.01f);
+		ImGui::DragFloat3("sphere.center", &sphere.center.x, 0.01f);
+		ImGui::DragFloat3("sphere.radius", &sphere.radius, 0.01f);
 
 		ImGui::End();
 
@@ -94,8 +94,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// AABB1を描画
 		DrawAABB(aabb1, viewProjectionMatrix, viewportMatrix, color);
-		// AABB2を描画
-		DrawAABB(aabb2, viewProjectionMatrix, viewportMatrix, WHITE);
+		// 球を描画
+		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, WHITE, 20);
 
 		// グリッドを描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
