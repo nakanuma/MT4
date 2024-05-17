@@ -171,6 +171,26 @@ void DrawPlane(const Plane& plane, const Matrix& viewProjectionMatrix, const Mat
 	);
 }
 
+void DrawTriangle(const Triangle& triangle, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix, uint32_t color)
+{
+	// スクリーン座標に変換した頂点情報を保持
+	Vec3 screenVertices[3];
+
+	// 三角形の頂点の座標変換を行う（ワールド座標->スクリーン座標）
+	for (uint32_t i = 0; i < 3; i++) {
+		screenVertices[i] = WorldToScreen(triangle.vertices[i], viewProjectionMatrix, viewportMatrix);
+	}
+
+	// 三角形を描画
+	Novice::DrawTriangle(
+		static_cast<int>(screenVertices[0].x), static_cast<int>(screenVertices[0].y),
+		static_cast<int>(screenVertices[1].x), static_cast<int>(screenVertices[1].y),
+		static_cast<int>(screenVertices[2].x), static_cast<int>(screenVertices[2].y),
+		color,
+		kFillModeWireFrame
+	);
+}
+
 Vec3 WorldToScreen(const Vec3& worldCoordinate,const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix)
 {
 	// ワールド座標系->正規化デバイス座標系
@@ -224,6 +244,43 @@ bool IsCollision(const Segment& segment, const Plane& plane)
 
 	// 衝突点が線分上にあるかを判定する
 	if (t >= 0.0f && t <= 1.0f) {
+		return true;
+	}
+
+	return false;
+}
+
+bool IsCollision(const Triangle& triangle, const Segment& segment)
+{
+	// 三角形の法線ベクトルを計算
+	Vec3 edge1 = Vec3::Subtract(triangle.vertices[1], triangle.vertices[0]);
+	Vec3 edge2 = Vec3::Subtract(triangle.vertices[2], triangle.vertices[1]);
+	Vec3 cross1 = Vec3::Cross(edge1, edge2);
+	Vec3 normal = Vec3::Normalize(cross1);
+
+	// 衝突点pを求める
+	Vec3 p = Vec3::Add(segment.origin, segment.diff);
+
+	// 小三角形のクロス積を取る
+	// 0->1->pからなる三角形
+	Vec3 v01 = Vec3::Subtract(triangle.vertices[1], triangle.vertices[0]);
+	Vec3 v1p = Vec3::Subtract(p, triangle.vertices[1]);
+	Vec3 cross01 = Vec3::Cross(v01, v1p);
+
+	// 1->2->pからなる三角形
+	Vec3 v12 = Vec3::Subtract(triangle.vertices[2], triangle.vertices[1]);
+	Vec3 v2p = Vec3::Subtract(p, triangle.vertices[2]);
+	Vec3 cross12 = Vec3::Cross(v12, v2p);
+
+	// 2->0->pからなる三角形
+	Vec3 v20 = Vec3::Subtract(triangle.vertices[0], triangle.vertices[2]);
+	Vec3 v0p = Vec3::Subtract(p, triangle.vertices[0]);
+	Vec3 cross20 = Vec3::Cross(v20, v0p);
+
+	// すべての小三角形のクロス積と法線が同じ方向を向いていたら衝突
+	if (Vec3::Dot(cross01, normal) >= 0.0f && 
+		Vec3::Dot(cross12, normal) >= 0.0f && 
+		Vec3::Dot(cross20, normal) >= 0.0f) {
 		return true;
 	}
 

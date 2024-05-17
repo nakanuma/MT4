@@ -21,6 +21,11 @@ struct Plane {
 	float distance; // 距離
 };
 
+// 三角形
+struct Triangle {
+	Vec3 vertices[3]; // 頂点
+};
+
 ///
 ///	描画
 /// 
@@ -33,6 +38,8 @@ void DrawSphere(const Sphere& sphere, const Matrix& viewProjectionMatrix, const 
 Vec3 Perpendicular(const Vec3& vector);
 // 平面の描画
 void DrawPlane(const Plane& plane, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix, uint32_t color);
+// 三角形の描画
+void DrawTriangle(const Triangle& triangle, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix, uint32_t color);
 // ワールド座標->スクリーン座標に変換
 Vec3 WorldToScreen(const Vec3& worldCoordinate, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix);
 
@@ -46,6 +53,8 @@ bool IsCollision(const Sphere& s1, const Sphere& s2);
 bool IsCollision(const Sphere& sphere, const Plane& plane);
 // 線分と平面の衝突判定
 bool IsCollision(const Segment& segment, const Plane& plane);
+// 三角形と線分の衝突判定
+bool IsCollision(const Triangle& triangle, const Segment& segment);
 
 ///
 ///	便利系

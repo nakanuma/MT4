@@ -27,11 +27,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	bool isFirstRightClick = true;
 	bool isFirstMiddleClick = true;
 
-	// 線の情報
-	Segment segment{ {-0.5f, 0.0f, 0.0f}, {1.0f, 0.5f, 0.0f} };
+	// 三角形の情報
+	Triangle triangle = 
+	{
+		{
+			{0.0f, 1.0f, 0.0f},
+			{-0.5f, 0.0f, 0.0f},
+			{0.5f, 0.0f, 0.0f}
+		}
+	};
+	// 線分の情報
+	Segment segment =
+	{
+		{1.0f, 0.5f, -0.5f},
+		{1.0f, 0.5f, 1.0f},
+	};
 	uint32_t color = WHITE;
-	// 平面の情報
-	Plane plane{ {0.0f, 1.0f, 0.0f}, 1.0f };
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -56,8 +67,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix viewProjectionMatrix = Matrix::Multiply(viewMatrix, projectionMatrix);
 		Matrix viewportMatrix = Matrix::MakeViewport(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
-		// 線と平面の衝突判定
-		if(IsCollision(segment, plane)){
+		// 三角形と線分の衝突判定
+		if (IsCollision(triangle, segment)) {
 			color = RED;
 		} else {
 			color = WHITE;
@@ -65,9 +76,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// ImGui
 		ImGui::Begin("Window");
-		ImGui::DragFloat3("Plane.Normal", &plane.normal.x, 0.01f);
-		plane.normal = Vec3::Normalize(plane.normal); // 法線を正規化
-		ImGui::DragFloat("Plane.Distance", &plane.distance, 0.01f);
+		ImGui::DragFloat3("Triangle.v0", &triangle.vertices[0].x, 0.01f);
+		ImGui::DragFloat3("Triangle.v1", &triangle.vertices[1].x, 0.01f);
+		ImGui::DragFloat3("Triangle.v2", &triangle.vertices[2].x, 0.01f);
 		ImGui::DragFloat3("Segment.Origin", &segment.origin.x, 0.01f);
 		ImGui::DragFloat3("Segment.Diff", &segment.diff.x, 0.01f);
 		ImGui::End();
@@ -80,10 +91,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		// 平面の描画
-		DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
-
-		// 線の描画
+		// 三角形を描画
+		DrawTriangle(triangle, viewProjectionMatrix, viewportMatrix, WHITE);
+		// 線分を描画
 		Vec3 start = Vec3::Transform(Vec3::Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
 		Vec3 end = Vec3::Transform(Vec3::Transform(Vec3::Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
 		Novice::DrawLine(
