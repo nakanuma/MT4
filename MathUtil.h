@@ -26,6 +26,12 @@ struct Triangle {
 	Vec3 vertices[3]; // 頂点
 };
 
+// AABB
+struct AABB {
+	Vec3 min;
+	Vec3 max;
+};
+
 ///
 ///	描画
 /// 
@@ -40,6 +46,9 @@ Vec3 Perpendicular(const Vec3& vector);
 void DrawPlane(const Plane& plane, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix, uint32_t color);
 // 三角形の描画
 void DrawTriangle(const Triangle& triangle, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix, uint32_t color);
+// AABBの描画
+void DrawAABB(const AABB& aabb, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix, uint32_t color);
+
 // ワールド座標->スクリーン座標に変換
 Vec3 WorldToScreen(const Vec3& worldCoordinate, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix);
 
@@ -55,6 +64,8 @@ bool IsCollision(const Sphere& sphere, const Plane& plane);
 bool IsCollision(const Segment& segment, const Plane& plane);
 // 三角形と線分の衝突判定
 bool IsCollision(const Triangle& triangle, const Segment& segment);
+// AABB同士の衝突判定
+bool IsCollision(const AABB& aabb1, const AABB& aabb2);
 
 ///
 ///	便利系
@@ -64,6 +75,8 @@ bool IsCollision(const Triangle& triangle, const Segment& segment);
 void VectorScreenPrintf(int x, int y, const Vec3& vector, const char* label);
 // Matrix4x4を画面上に表示
 void MatrixScreenPrintf(int x, int y, const Matrix& matrix, const char* label);
+// AABBのminとmaxの入れ替えを防止
+void PreventionSwtichMinMax(AABB aabb);
 
 // カメラの操作を行う
 void CameraControl(Vec3& cameraTranslate, Vec3& cameraRotate, int& prevMousePosX, int& prevMousePosY, bool& isFirstRightClick, bool& isFirstMiddleClick);

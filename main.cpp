@@ -27,23 +27,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	bool isFirstRightClick = true;
 	bool isFirstMiddleClick = true;
 
-	// 三角形の情報
-	Triangle triangle = 
-	{
-		{
-			{0.0f, 1.0f, 0.0f},
-			{-0.5f, 0.0f, 0.0f},
-			{0.5f, 0.0f, 0.0f}
-		}
+	// 
+	AABB aabb1{
+		.min{-0.5f, -0.5f, -0.5f},
+		.max{0.0f, 0.0f, 0.0f}
 	};
-	// 線分の情報
-	Segment segment =
-	{
-		{1.0f, 0.5f, -0.5f},
-		{1.0f, 0.5f, 1.0f},
-	};
+
 	uint32_t color = WHITE;
 
+	AABB aabb2{
+		.min{0.2f, 0.2f, 0.2f},
+		.max{1.0f, 1.0f, 1.0f}
+	};
+	
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -67,8 +63,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix viewProjectionMatrix = Matrix::Multiply(viewMatrix, projectionMatrix);
 		Matrix viewportMatrix = Matrix::MakeViewport(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
-		// 三角形と線分の衝突判定
-		if (IsCollision(triangle, segment)) {
+		// AABBのminとmaxの入れ替わりを防止
+		PreventionSwtichMinMax(aabb1);
+		PreventionSwtichMinMax(aabb2);
+
+		// AABB同士の衝突判定
+		if (IsCollision(aabb1, aabb2)) {
 			color = RED;
 		} else {
 			color = WHITE;
@@ -76,11 +76,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// ImGui
 		ImGui::Begin("Window");
-		ImGui::DragFloat3("Triangle.v0", &triangle.vertices[0].x, 0.01f);
-		ImGui::DragFloat3("Triangle.v1", &triangle.vertices[1].x, 0.01f);
-		ImGui::DragFloat3("Triangle.v2", &triangle.vertices[2].x, 0.01f);
-		ImGui::DragFloat3("Segment.Origin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat3("Segment.Diff", &segment.diff.x, 0.01f);
+
+		ImGui::DragFloat3("aabb1.min", &aabb1.min.x, 0.01f);
+		ImGui::DragFloat3("aabb1.max", &aabb1.max.x, 0.01f);
+		ImGui::DragFloat3("aabb2.min", &aabb2.min.x, 0.01f);
+		ImGui::DragFloat3("aabb2.max", &aabb2.max.x, 0.01f);
+
 		ImGui::End();
 
 		///
@@ -91,17 +92,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		// 三角形を描画
-		DrawTriangle(triangle, viewProjectionMatrix, viewportMatrix, WHITE);
-		// 線分を描画
-		Vec3 start = Vec3::Transform(Vec3::Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
-		Vec3 end = Vec3::Transform(Vec3::Transform(Vec3::Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
-		Novice::DrawLine(
-			static_cast<int>(start.x),
-			static_cast<int>(start.y),
-			static_cast<int>(end.x),
-			static_cast<int>(end.y),
-			color);
+		// AABB1を描画
+		DrawAABB(aabb1, viewProjectionMatrix, viewportMatrix, color);
+		// AABB2を描画
+		DrawAABB(aabb2, viewProjectionMatrix, viewportMatrix, WHITE);
 
 		// グリッドを描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);

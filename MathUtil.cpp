@@ -191,7 +191,100 @@ void DrawTriangle(const Triangle& triangle, const Matrix& viewProjectionMatrix, 
 	);
 }
 
-Vec3 WorldToScreen(const Vec3& worldCoordinate,const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix)
+void DrawAABB(const AABB& aabb, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix, uint32_t color)
+{
+	const int kVerticesNum = 8;
+
+	Vec3 vertices[kVerticesNum];
+	// 8通りの組み合わせを求める
+	for (int i = 0; i < kVerticesNum; i++) {
+		vertices[i].x = (i & 1) ? aabb.max.x : aabb.min.x;
+		vertices[i].y = (i & 2) ? aabb.max.y : aabb.min.y;
+		vertices[i].z = (i & 4) ? aabb.max.z : aabb.min.z;
+	}
+
+	// 各頂点をスクリーン座標に変換
+	Vec3 screenVertices[kVerticesNum];
+	for (int i = 0; i < kVerticesNum; i++) {
+		screenVertices[i] = WorldToScreen(vertices[i], viewProjectionMatrix, viewportMatrix);
+	}
+
+	// 各頂点を繋いで描画（正面から見たと仮定）
+	// 前面
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[0].x), static_cast<int>(screenVertices[0].y),
+		static_cast<int>(screenVertices[1].x), static_cast<int>(screenVertices[1].y),
+		color
+	);
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[0].x), static_cast<int>(screenVertices[0].y),
+		static_cast<int>(screenVertices[2].x), static_cast<int>(screenVertices[2].y),
+		color
+	);
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[2].x), static_cast<int>(screenVertices[2].y),
+		static_cast<int>(screenVertices[3].x), static_cast<int>(screenVertices[3].y),
+		color
+	);
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[3].x), static_cast<int>(screenVertices[3].y),
+		static_cast<int>(screenVertices[1].x), static_cast<int>(screenVertices[1].y),
+		color
+	);
+
+	// 左上
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[2].x), static_cast<int>(screenVertices[2].y),
+		static_cast<int>(screenVertices[6].x), static_cast<int>(screenVertices[6].y),
+		color
+	);
+	// 右上
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[3].x), static_cast<int>(screenVertices[3].y),
+		static_cast<int>(screenVertices[7].x), static_cast<int>(screenVertices[7].y),
+		color
+	);
+	// 左下
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[0].x), static_cast<int>(screenVertices[0].y),
+		static_cast<int>(screenVertices[4].x), static_cast<int>(screenVertices[4].y),
+		color
+	);
+	// 右下
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[1].x), static_cast<int>(screenVertices[1].y),
+		static_cast<int>(screenVertices[5].x), static_cast<int>(screenVertices[5].y),
+		color
+	);
+
+	// 後面
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[4].x), static_cast<int>(screenVertices[4].y),
+		static_cast<int>(screenVertices[5].x), static_cast<int>(screenVertices[5].y),
+		color
+	);
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[4].x), static_cast<int>(screenVertices[4].y),
+		static_cast<int>(screenVertices[6].x), static_cast<int>(screenVertices[6].y),
+		color
+	);
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[6].x), static_cast<int>(screenVertices[6].y),
+		static_cast<int>(screenVertices[7].x), static_cast<int>(screenVertices[7].y),
+		color
+	);
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[7].x), static_cast<int>(screenVertices[7].y),
+		static_cast<int>(screenVertices[5].x), static_cast<int>(screenVertices[5].y),
+		color
+	);
+
+	for (int i = 0; i < kVerticesNum; i++) {
+		Novice::ScreenPrintf(0, 0 + (20 * i), "%1.f, %1.f, %1.f", screenVertices[i].x, screenVertices[i].y, screenVertices[i].z);
+	}
+}
+
+Vec3 WorldToScreen(const Vec3& worldCoordinate, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix)
 {
 	// ワールド座標系->正規化デバイス座標系
 	Vec3 ndc = Vec3::Transform(worldCoordinate, viewProjectionMatrix);
@@ -278,9 +371,20 @@ bool IsCollision(const Triangle& triangle, const Segment& segment)
 	Vec3 cross20 = Vec3::Cross(v20, v0p);
 
 	// すべての小三角形のクロス積と法線が同じ方向を向いていたら衝突
-	if (Vec3::Dot(cross01, normal) >= 0.0f && 
-		Vec3::Dot(cross12, normal) >= 0.0f && 
+	if (Vec3::Dot(cross01, normal) >= 0.0f &&
+		Vec3::Dot(cross12, normal) >= 0.0f &&
 		Vec3::Dot(cross20, normal) >= 0.0f) {
+		return true;
+	}
+
+	return false;
+}
+
+bool IsCollision(const AABB& aabb1, const AABB& aabb2)
+{
+	if ((aabb1.min.x < aabb2.max.x && aabb1.max.x > aabb2.min.x) &&  // x軸
+		(aabb1.min.y < aabb2.max.y && aabb1.max.y > aabb2.min.y) &&  // y軸
+		(aabb1.min.z < aabb2.max.z && aabb1.max.z > aabb2.min.z)) {  // z軸
 		return true;
 	}
 
@@ -305,6 +409,18 @@ void MatrixScreenPrintf(int x, int y, const Matrix& matrix, const char* label)
 			);
 		}
 	}
+}
+
+void PreventionSwtichMinMax(AABB aabb)
+{
+	aabb.min.x = (std::min)(aabb.min.x, aabb.max.x);
+	aabb.max.x = (std::max)(aabb.min.x, aabb.max.x);
+
+	aabb.min.y = (std::min)(aabb.min.y, aabb.max.y);
+	aabb.max.y = (std::max)(aabb.min.y, aabb.max.x);
+
+	aabb.min.z = (std::min)(aabb.min.z, aabb.max.z);
+	aabb.max.z = (std::max)(aabb.min.z, aabb.max.z);
 }
 
 void CameraControl(Vec3& cameraTranslate, Vec3& cameraRotate, int& prevMousePosX, int& prevMousePosY, bool& isFirstRightClick, bool& isFirstMiddleClick)
