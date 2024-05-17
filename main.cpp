@@ -30,17 +30,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// AABBの情報
 	AABB aabb1{
 		.min{-0.5f, -0.5f, -0.5f},
-		.max{0.0f, 0.0f, 0.0f}
+		.max{0.5f, 0.5f, 0.5f}
 	};
 
 	uint32_t color = WHITE;
 
-	// 球の情報
-	Sphere sphere{
-		{1.0f, 0.0f, 0.0f},
-		0.5f
+	// 線分の情報
+	Segment segment{
+		.origin{-0.7f, 0.3f, 0.0f},
+		.diff{2.0f, -0.5f, 0.0f}
 	};
-	
+
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -67,8 +67,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// AABBのminとmaxの入れ替わりを防止
 		PreventionSwtichMinMax(aabb1);
 
-		// AABBと球の衝突判定
-		if (IsCollision(aabb1, sphere)) {
+		// AABBと線分の衝突判定
+		if (IsCollision(aabb1, segment)) {
 			color = RED;
 		} else {
 			color = WHITE;
@@ -79,8 +79,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		ImGui::DragFloat3("aabb1.min", &aabb1.min.x, 0.01f);
 		ImGui::DragFloat3("aabb1.max", &aabb1.max.x, 0.01f);
-		ImGui::DragFloat3("sphere.center", &sphere.center.x, 0.01f);
-		ImGui::DragFloat3("sphere.radius", &sphere.radius, 0.01f);
+		ImGui::DragFloat3("segment.origin", &segment.origin.x, 0.01f);
+		ImGui::DragFloat3("segment.diff", &segment.diff.x, 0.01f);
 
 		ImGui::End();
 
@@ -94,8 +94,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// AABB1を描画
 		DrawAABB(aabb1, viewProjectionMatrix, viewportMatrix, color);
-		// 球を描画
-		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, WHITE, 20);
+		// 線分を描画
+		Vec3 start = Vec3::Transform(Vec3::Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
+		Vec3 end = Vec3::Transform(Vec3::Transform(Vec3::Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
+		Novice::DrawLine(
+			static_cast<int>(start.x),
+			static_cast<int>(start.y),
+			static_cast<int>(end.x),
+			static_cast<int>(end.y),
+			color);
 
 		// グリッドを描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);

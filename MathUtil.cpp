@@ -410,6 +410,11 @@ bool IsCollision(const AABB& aabb, const Sphere& sphere)
 	return false;
 }
 
+bool IsCollision(const AABB& aabb, const Segment& segment)
+{
+	return false;
+}
+
 void VectorScreenPrintf(int x, int y, const Vec3& vector, const char* label)
 {
 	Novice::ScreenPrintf(x, y, "%.02f", vector.x);

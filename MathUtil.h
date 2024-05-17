@@ -68,6 +68,8 @@ bool IsCollision(const Triangle& triangle, const Segment& segment);
 bool IsCollision(const AABB& aabb1, const AABB& aabb2);
 // AABBと球の衝突判定
 bool IsCollision(const AABB& aabb, const Sphere& sphere);
+// AABBと線分の衝突判定
+bool IsCollision(const AABB& aabb, const Segment& segment);
 
 ///
 ///	便利系
