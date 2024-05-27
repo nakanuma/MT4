@@ -285,6 +285,102 @@ void DrawAABB(const AABB& aabb, const Matrix& viewProjectionMatrix, const Matrix
 	}
 }
 
+void DrawOBB(const OBB& obb, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix, uint32_t color)
+{
+	// 8つの頂点を求める
+	Vec3 vertices[8];
+	for (int i = 0; i < 2; ++i) {
+		for (int j = 0; j < 2; ++j) {
+			for (int k = 0; k < 2; ++k) {
+				Vec3 vertex = obb.center;
+
+				vertex += Vec3::Multiply((i == 0 ? -1.0f : 1.0f), Vec3::Multiply(obb.size.x, obb.orientations[0]));
+				vertex += Vec3::Multiply((j == 0 ? -1.0f : 1.0f), Vec3::Multiply(obb.size.y, obb.orientations[1]));
+				vertex += Vec3::Multiply((k == 0 ? -1.0f : 1.0f), Vec3::Multiply(obb.size.z, obb.orientations[2]));
+
+				vertices[i * 4 + j * 2 + k] = vertex;
+			}
+		}
+	}
+
+	// 全ての頂点をスクリーン座標に変換
+	Vec3 screenVertices[8];
+	for (int i = 0; i < 8; i++) {
+		screenVertices[i] = WorldToScreen(vertices[i], viewProjectionMatrix, viewportMatrix);
+	}
+
+	// 各頂点を繋いで描画（正面から見たと仮定）
+	// 前面
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[0].x), static_cast<int>(screenVertices[0].y),
+		static_cast<int>(screenVertices[1].x), static_cast<int>(screenVertices[1].y),
+		color
+	);
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[0].x), static_cast<int>(screenVertices[0].y),
+		static_cast<int>(screenVertices[2].x), static_cast<int>(screenVertices[2].y),
+		color
+	);
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[2].x), static_cast<int>(screenVertices[2].y),
+		static_cast<int>(screenVertices[3].x), static_cast<int>(screenVertices[3].y),
+		color
+	);
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[3].x), static_cast<int>(screenVertices[3].y),
+		static_cast<int>(screenVertices[1].x), static_cast<int>(screenVertices[1].y),
+		color
+	);
+
+	// 左上
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[2].x), static_cast<int>(screenVertices[2].y),
+		static_cast<int>(screenVertices[6].x), static_cast<int>(screenVertices[6].y),
+		color
+	);
+	// 右上
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[3].x), static_cast<int>(screenVertices[3].y),
+		static_cast<int>(screenVertices[7].x), static_cast<int>(screenVertices[7].y),
+		color
+	);
+	// 左下
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[0].x), static_cast<int>(screenVertices[0].y),
+		static_cast<int>(screenVertices[4].x), static_cast<int>(screenVertices[4].y),
+		color
+	);
+	// 右下
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[1].x), static_cast<int>(screenVertices[1].y),
+		static_cast<int>(screenVertices[5].x), static_cast<int>(screenVertices[5].y),
+		color
+	);
+
+	// 後面
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[4].x), static_cast<int>(screenVertices[4].y),
+		static_cast<int>(screenVertices[5].x), static_cast<int>(screenVertices[5].y),
+		color
+	);
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[4].x), static_cast<int>(screenVertices[4].y),
+		static_cast<int>(screenVertices[6].x), static_cast<int>(screenVertices[6].y),
+		color
+	);
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[6].x), static_cast<int>(screenVertices[6].y),
+		static_cast<int>(screenVertices[7].x), static_cast<int>(screenVertices[7].y),
+		color
+	);
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[7].x), static_cast<int>(screenVertices[7].y),
+		static_cast<int>(screenVertices[5].x), static_cast<int>(screenVertices[5].y),
+		color
+	);
+
+}
+
 Vec3 WorldToScreen(const Vec3& worldCoordinate, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix)
 {
 	// ワールド座標系->正規化デバイス座標系
@@ -457,6 +553,42 @@ bool IsCollision(const AABB& aabb, const Segment& segment)
 
 	if (tmin <= tmax && tmax >= 0.0f && tmin <= 1.0f) {
 		// 衝突
+		return true;
+	}
+
+	return false;
+}
+
+bool IsCollision(const OBB& obb, const Sphere& sphere, Matrix& rotateMatrix)
+{
+	// OBBのWorldMatrixを作る
+	Matrix obbWorldMatrix = rotateMatrix;
+	obbWorldMatrix.m[0][3] = 0;
+	obbWorldMatrix.m[1][3] = 0;
+	obbWorldMatrix.m[2][3] = 0;
+	obbWorldMatrix.m[3][3] = 1;
+
+	// 平行移動成分を代入
+	obbWorldMatrix.m[3][0] = obb.center.x;
+	obbWorldMatrix.m[3][1] = obb.center.y;
+	obbWorldMatrix.m[3][2] = obb.center.z;
+
+	// OBBのWorldMatrixの逆行列を求める
+	Matrix obbWorldMatrixInverse = Matrix::Inverse(obbWorldMatrix);
+
+	// 中心点をローカル空間上の点にする
+	Vec3 centerInOBBLocalSpace = Vec3::Transform(sphere.center, obbWorldMatrixInverse);
+
+	// OBBからAABBを作る
+	AABB aabbOBBLocal{
+		.min = Vec3::Multiply(-1.0f,obb.size),
+		.max = obb.size
+	};
+	// 球を作る
+	Sphere sphereOBBLocal{ centerInOBBLocalSpace, sphere.radius };
+
+	// ローカル空間で衝突判定
+	if (IsCollision(aabbOBBLocal, sphereOBBLocal)) {
 		return true;
 	}
 

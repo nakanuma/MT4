@@ -18,6 +18,14 @@ Vec3::Vec3(float argX, float argY, float argZ)
 	z = argZ;
 }
 
+Vec3& Vec3::operator+=(const Vec3& other)
+{
+	this->x += other.x;
+	this->y += other.y;
+	this->z += other.z;
+	return *this;
+}
+
 Vec3 Vec3::Add(const Vec3& v1, const Vec3& v2)
 {
 	return Vec3(

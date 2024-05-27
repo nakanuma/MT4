@@ -32,6 +32,13 @@ struct AABB {
 	Vec3 max;
 };
 
+// OBB
+struct OBB {
+	Vec3 center; // 中心点
+	Vec3 orientations[3]; // 座標軸
+	Vec3 size; // 座標軸方向の長さの半分
+};
+
 ///
 ///	描画
 /// 
@@ -48,6 +55,8 @@ void DrawPlane(const Plane& plane, const Matrix& viewProjectionMatrix, const Mat
 void DrawTriangle(const Triangle& triangle, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix, uint32_t color);
 // AABBの描画
 void DrawAABB(const AABB& aabb, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix, uint32_t color);
+// OBBの描画
+void DrawOBB(const OBB& obb, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix, uint32_t color);
 
 // ワールド座標->スクリーン座標に変換
 Vec3 WorldToScreen(const Vec3& worldCoordinate, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix);
@@ -70,6 +79,8 @@ bool IsCollision(const AABB& aabb1, const AABB& aabb2);
 bool IsCollision(const AABB& aabb, const Sphere& sphere);
 // AABBと線分の衝突判定
 bool IsCollision(const AABB& aabb, const Segment& segment);
+// OBBと球の衝突判定
+bool IsCollision(const OBB& obb, const Sphere& sphere, Matrix& rotateMatrix);
 
 ///
 ///	便利系
