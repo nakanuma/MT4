@@ -346,39 +346,61 @@ bool IsCollision(const Segment& segment, const Plane& plane)
 
 bool IsCollision(const Triangle& triangle, const Segment& segment)
 {
-	// 三角形の法線ベクトルを計算
-	Vec3 edge1 = Vec3::Subtract(triangle.vertices[1], triangle.vertices[0]);
-	Vec3 edge2 = Vec3::Subtract(triangle.vertices[2], triangle.vertices[1]);
-	Vec3 cross1 = Vec3::Cross(edge1, edge2);
-	Vec3 normal = Vec3::Normalize(cross1);
+	// 2つのベクトルを計算
+	Vec3 vec1 = Vec3::Subtract(triangle.vertices[1], triangle.vertices[0]);
+	Vec3 vec2 = Vec3::Subtract(triangle.vertices[2], triangle.vertices[1]);
 
-	// 衝突点pを求める
-	Vec3 p = Vec3::Add(segment.origin, segment.diff);
+	// 外積を計算して法線ベクトルを得る
+	Vec3 normal = Vec3::Cross(vec1, vec2);
 
-	// 小三角形のクロス積を取る
-	// 0->1->pからなる三角形
-	Vec3 v01 = Vec3::Subtract(triangle.vertices[1], triangle.vertices[0]);
-	Vec3 v1p = Vec3::Subtract(p, triangle.vertices[1]);
-	Vec3 cross01 = Vec3::Cross(v01, v1p);
+	// 法線ベクトルを正規化
+	float length = Vec3::Length(normal);
+	normal.x /= length;
+	normal.y /= length;
+	normal.z /= length;
 
-	// 1->2->pからなる三角形
-	Vec3 v12 = Vec3::Subtract(triangle.vertices[2], triangle.vertices[1]);
-	Vec3 v2p = Vec3::Subtract(p, triangle.vertices[2]);
-	Vec3 cross12 = Vec3::Cross(v12, v2p);
+	// 平面までの距離を計算
+	float distance =
+		-(normal.x * triangle.vertices[0].x,
+			normal.y * triangle.vertices[0].y,
+			normal.z * triangle.vertices[0].z);
 
-	// 2->0->pからなる三角形
-	Vec3 v20 = Vec3::Subtract(triangle.vertices[0], triangle.vertices[2]);
-	Vec3 v0p = Vec3::Subtract(p, triangle.vertices[0]);
-	Vec3 cross20 = Vec3::Cross(v20, v0p);
+	// 三角形の存在する平面を作成
+	Plane plane = { normal, distance };
 
-	// すべての小三角形のクロス積と法線が同じ方向を向いていたら衝突
-	if (Vec3::Dot(cross01, normal) >= 0.0f &&
-		Vec3::Dot(cross12, normal) >= 0.0f &&
-		Vec3::Dot(cross20, normal) >= 0.0f) {
-		return true;
+	// 最初に線と三角形の存在する平面との衝突判定を行う
+	if (IsCollision(segment, plane)) {
+		// 衝突点pを求める
+		float dot = Vec3::Dot(plane.normal, segment.diff);
+		float t = (plane.distance - Vec3::Dot(segment.origin, plane.normal)) / dot;
+		Vec3 p = Vec3::Add(segment.origin, Vec3::Multiply(t, segment.diff));
+
+		// 小三角形のクロス積を取る
+		// 0->1->pからなる三角形
+		Vec3 v01 = Vec3::Subtract(triangle.vertices[1], triangle.vertices[0]);
+		Vec3 v1p = Vec3::Subtract(p, triangle.vertices[1]);
+		Vec3 cross01 = Vec3::Cross(v01, v1p);
+
+		// 1->2->pからなる三角形
+		Vec3 v12 = Vec3::Subtract(triangle.vertices[2], triangle.vertices[1]);
+		Vec3 v2p = Vec3::Subtract(p, triangle.vertices[2]);
+		Vec3 cross12 = Vec3::Cross(v12, v2p);
+
+		// 2->0->pからなる三角形
+		Vec3 v20 = Vec3::Subtract(triangle.vertices[0], triangle.vertices[2]);
+		Vec3 v0p = Vec3::Subtract(p, triangle.vertices[0]);
+		Vec3 cross20 = Vec3::Cross(v20, v0p);
+
+		// すべての小三角形のクロス積と法線が同じ方向を向いていたら衝突
+		if (Vec3::Dot(cross01, normal) >= 0.0f &&
+			Vec3::Dot(cross12, normal) >= 0.0f &&
+			Vec3::Dot(cross20, normal) >= 0.0f) {
+			return true;
+		}
 	}
 
 	return false;
+
 }
 
 bool IsCollision(const AABB& aabb1, const AABB& aabb2)
@@ -412,6 +434,32 @@ bool IsCollision(const AABB& aabb, const Sphere& sphere)
 
 bool IsCollision(const AABB& aabb, const Segment& segment)
 {
+	float tminX = (aabb.min.x - segment.origin.x) / segment.diff.x;
+	float tmaxX = (aabb.max.x - segment.origin.x) / segment.diff.x;
+
+	float tminY = (aabb.min.y - segment.origin.y) / segment.diff.y;
+	float tmaxY = (aabb.max.y - segment.origin.y) / segment.diff.y;
+
+	float tminZ = (aabb.min.z - segment.origin.z) / segment.diff.z;
+	float tmaxZ = (aabb.max.z - segment.origin.z) / segment.diff.z;
+
+	float tNearX = min(tminX, tmaxX);
+	float tFarX = max(tminX, tmaxX);
+
+	float tNearY = min(tminY, tmaxY);
+	float tFarY = max(tminY, tmaxY);
+
+	float tNearZ = min(tminZ, tmaxZ);
+	float tFarZ = max(tminZ, tmaxZ);
+
+	float tmin = max(max(tNearX, tNearY), tNearZ);
+	float tmax = min(min(tFarX, tFarY), tFarZ);
+
+	if (tmin <= tmax && tmax >= 0.0f && tmin <= 1.0f) {
+		// 衝突
+		return true;
+	}
+
 	return false;
 }
 

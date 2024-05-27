@@ -102,7 +102,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			static_cast<int>(start.y),
 			static_cast<int>(end.x),
 			static_cast<int>(end.y),
-			color);
+			WHITE);
 
 		// グリッドを描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
