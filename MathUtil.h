@@ -39,6 +39,25 @@ struct OBB {
 	Vec3 size; // 座標軸方向の長さの半分
 };
 
+// ばね
+struct Spring {
+	// アンカー。固定された端の位置
+	Vec3 anchor;
+	float naturalLength; // 自然長
+	float stiffness; // 剛性。バネ定数k
+	float dampingCoefficient; // 減衰係数
+};
+
+// ボール
+struct Ball {
+	Vec3 position; // ボールの位置
+	Vec3 velocity; // ボールの速度
+	Vec3 acceleration; // ボールの加速度
+	float mass; // ボールの質量
+	float radius; // ボールの半径
+	unsigned int color; // ボールの色
+};
+
 ///
 ///	描画
 /// 

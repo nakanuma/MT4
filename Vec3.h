@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <math.h>
+#include <cassert>
 
 class Matrix; // 循環参照が起きるので前方宣言
 struct Line;
@@ -18,13 +19,29 @@ public:
 	// float3つで初期化
 	Vec3(float argX, float argY, float argZ);
 
-	Vec3& operator+=(const Vec3& other);
+	Vec3 operator+(const Vec3& other) const {
+		return Vec3(x + other.x, y + other.y, z + other.z);
+	}
 	Vec3 operator-(const Vec3& other) const {
 		return Vec3(x - other.x, y - other.y, z - other.z);
 	}
 	Vec3 operator*(const Vec3& other) const {
 		return Vec3(x * other.x, y * other.y, z * other.z);
 	}
+	Vec3 operator*(float scalar) const {
+		return Vec3(x * scalar, y * scalar, z * scalar);
+	}
+	friend Vec3 operator*(float scalar, const Vec3& vec) {
+		return Vec3(vec.x * scalar, vec.y * scalar, vec.z * scalar);
+	}
+	Vec3 operator/(float scalar) const {
+		if (scalar == 0.0f) {
+			assert(0);
+		}
+		return Vec3(x / scalar, y / scalar, z / scalar);
+	}
+
+	Vec3& operator+=(const Vec3& other);
 
 	// 加算
 	static Vec3 Add(const Vec3& v1, const Vec3& v2);

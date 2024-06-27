@@ -58,7 +58,7 @@ void DrawGrid(const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix)
 				static_cast<int>(screenStartPos.y),
 				static_cast<int>(screenEndPos.x),
 				static_cast<int>(screenEndPos.y),
-				WHITE
+				0xc0c0c0FF
 			);
 		}
 	}
@@ -89,7 +89,7 @@ void DrawGrid(const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix)
 				static_cast<int>(screenStartPos.y),
 				static_cast<int>(screenEndPos.x),
 				static_cast<int>(screenEndPos.y),
-				WHITE
+				0xc0c0c0FF
 			);
 		}
 	}
