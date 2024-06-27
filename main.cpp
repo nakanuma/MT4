@@ -27,9 +27,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	bool isFirstRightClick = true;
 	bool isFirstMiddleClick = true;
 
+
 	float deltaTime = 1.0f / 60.0f;
 	float angularVelocity = 3.14f;
 	float angle = 0.0f;
+
+	Vec3 spherePosition = {0.8f, 0.0f, 0.0f};
+	float radius = 0.8f; // 円運動の半径
+	Vec3 center = { 0.0f, 0.0f, 0.0f }; // 回転の中心点
+
+	bool isSimulationRunning = false;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -54,12 +61,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix viewProjectionMatrix = Matrix::Multiply(viewMatrix, projectionMatrix);
 		Matrix viewportMatrix = Matrix::MakeViewport(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
-
-		angle += angularVelocity * deltaTime;
+		if (isSimulationRunning) {
+			angle += angularVelocity * deltaTime;
+			// 球の位置を更新
+			spherePosition = {
+				center.x + radius * std::cosf(angle),
+				center.y + radius * std::sinf(angle),
+				center.z
+			};
+		}
 
 		// ImGui
 		ImGui::Begin("Window");
 
+		if (ImGui::Button("Start")) {
+			isSimulationRunning = true;
+		}
 
 		ImGui::End();
 
@@ -74,7 +91,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// グリッドを描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 
-
+		// 球を描画
+		DrawSphere({spherePosition, 0.1f}, viewProjectionMatrix, viewportMatrix, WHITE, 20);
 
 		///
 		/// ↑描画処理ここまで
