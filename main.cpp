@@ -31,22 +31,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	float deltaTime = 1.0f / 60.0f;
 	bool isSimulationRunning = false;
 
-	// 振り子の初期値を設定
-	Pendulum pendulum;
-	pendulum.anchor = { 0.0f, 1.0f, 0.0f };
-	pendulum.length = 0.8f;
-	pendulum.angle = 0.7f;
-	pendulum.angularVelocity = 0.0f;
-	pendulum.angularAcceleration = 0.0f;
+	// 円錐振り子の初期値
+	ConicalPendulum conicalPendulm;
+	conicalPendulm.anchor = { 0.0f, 1.0f, 0.0f };
+	conicalPendulm.length = 0.8f;
+	conicalPendulm.halfApexAngle = 0.7f;
+	conicalPendulm.angle = 0.0f;
+	conicalPendulm.angularVelocity = 0.0f;
 
-	// 振り子の先端に付ける球
-	Sphere sphere;
-	sphere.center = {
-		sphere.center.x = pendulum.anchor.x + std::sinf(pendulum.angle) * pendulum.length,
-		sphere.center.y = pendulum.anchor.y - std::cosf(pendulum.angle) * pendulum.length,
-		sphere.center.z = pendulum.anchor.z
+	float radius = std::sinf(conicalPendulm.halfApexAngle) * conicalPendulm.length;
+	float height = std::cosf(conicalPendulm.halfApexAngle) * conicalPendulm.length;
+
+	Ball ball;
+	ball.position = {
+		ball.position.x = conicalPendulm.anchor.x + std::cosf(conicalPendulm.angle) * radius,
+		ball.position.y = conicalPendulm.anchor.y - height,
+		ball.position.z = conicalPendulm.anchor.z - std::sinf(conicalPendulm.angle) * radius
 	};
-	sphere.radius = 0.05f;
+	ball.mass = 2.0f;
+	ball.radius = 0.05f;
+	ball.color = BLUE;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -71,16 +75,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix viewProjectionMatrix = Matrix::Multiply(viewMatrix, projectionMatrix);
 		Matrix viewportMatrix = Matrix::MakeViewport(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
-
 		if (isSimulationRunning) {
-			// 振り子の角度を計算
-			pendulum.angularAcceleration = -(9.8f / pendulum.length) * std::sinf(pendulum.angle);
-			pendulum.angularVelocity += pendulum.angularAcceleration * deltaTime;
-			pendulum.angle += pendulum.angularVelocity * deltaTime;
+			// 角速度の計算
+			conicalPendulm.angularVelocity = std::sqrtf(9.8f / (conicalPendulm.length * std::cosf(conicalPendulm.halfApexAngle)));
+			conicalPendulm.angle += conicalPendulm.angularVelocity * deltaTime;
 
-			sphere.center.x = pendulum.anchor.x + std::sinf(pendulum.angle) * pendulum.length;
-			sphere.center.y = pendulum.anchor.y - std::cosf(pendulum.angle) * pendulum.length;
-			sphere.center.z = pendulum.anchor.z;
+			radius = std::sinf(conicalPendulm.halfApexAngle) * conicalPendulm.length;
+			height = std::cosf(conicalPendulm.halfApexAngle) * conicalPendulm.length;
+			ball.position.x = conicalPendulm.anchor.x + std::cosf(conicalPendulm.angle) * radius;
+			ball.position.y = conicalPendulm.anchor.y - height;
+			ball.position.z = conicalPendulm.anchor.z - std::sinf(conicalPendulm.angle) * radius;
 		}
 
 		// ImGui
@@ -89,6 +93,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (ImGui::Button("Start")) {
 			isSimulationRunning = true;
 		}
+		ImGui::DragFloat("Length", &conicalPendulm.length, 0.01f);
+		ImGui::DragFloat("HalfApexAngle", &conicalPendulm.halfApexAngle, 0.01f);
 
 		ImGui::End();
 
@@ -102,11 +108,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// グリッドを描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
-
-		// 振り子のアンカーポイントから球の中心への線分を描画
-		DrawSegment({ pendulum.anchor, sphere.center - pendulum.anchor }, viewProjectionMatrix, viewportMatrix);
+		
+		// 円錐振り子のアンカーポイントから球の中心への線分を描画
+		DrawSegment({ conicalPendulm.anchor, ball.position - conicalPendulm.anchor }, viewProjectionMatrix, viewportMatrix);
 		// 球を描画
-		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, WHITE, 20);
+		DrawSphere({ ball.position, ball.radius }, viewProjectionMatrix, viewportMatrix, WHITE, 20);
 
 		///
 		/// ↑描画処理ここまで
