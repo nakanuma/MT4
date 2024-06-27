@@ -7,6 +7,18 @@
 #include "Vec3.h"
 #include "Vec4.h"
 
+void DrawSegment(const Segment& segment, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix)
+{
+	Vec3 start = Vec3::Transform(Vec3::Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
+	Vec3 end = Vec3::Transform(Vec3::Transform(Vec3::Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
+	Novice::DrawLine(
+		static_cast<int>(start.x),
+		static_cast<int>(start.y),
+		static_cast<int>(end.x),
+		static_cast<int>(end.y),
+		WHITE);
+}
+
 void DrawGrid(const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix)
 {
 	const float kGridHalfWidth = 2.0f; // Gridの半分の幅

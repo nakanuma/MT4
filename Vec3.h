@@ -19,6 +19,12 @@ public:
 	Vec3(float argX, float argY, float argZ);
 
 	Vec3& operator+=(const Vec3& other);
+	Vec3 operator-(const Vec3& other) const {
+		return Vec3(x - other.x, y - other.y, z - other.z);
+	}
+	Vec3 operator*(const Vec3& other) const {
+		return Vec3(x * other.x, y * other.y, z * other.z);
+	}
 
 	// 加算
 	static Vec3 Add(const Vec3& v1, const Vec3& v2);

@@ -43,6 +43,8 @@ struct OBB {
 ///	描画
 /// 
 
+// 線分の描画
+void DrawSegment(const Segment& segment, const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix);
 // グリッドの描画
 void  DrawGrid(const Matrix& viewProjectionMatrix, const Matrix& viewportMatrix);
 // 球の描画

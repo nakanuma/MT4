@@ -27,22 +27,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	bool isFirstRightClick = true;
 	bool isFirstMiddleClick = true;
 
-	// OBBの情報
-	Vec3 rotate = { 0.0f, 0.0f, 0.0f };
-	OBB obb{
-		.center{-1.0f, 0.0f, 0.0f},
-		.orientations = {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
-		.size{0.5f, 0.5f, 0.5f}
+	// 階層構造の初期値
+	Vec3 translates[3] = {
+		{0.2f, 1.0f, 0.0f},
+		{0.4f, 0.0f, 0.0f},
+		{0.3f, 0.0f, 0.0f},
 	};
-
-	uint32_t color = WHITE;
-
-	// 球の情報
-	Sphere sphere = {
-		.center{0.0f, 0.0f, 0.0f},
-		.radius{0.5f}
+	Vec3 rotates[3] = {
+		{0.0f, 0.0f, -6.8f},
+		{0.0f, 0.0f, -1.4f},
+		{0.0f, 0.0f, 0.0f},
 	};
-
+	Vec3 scales[3] = {
+		{1.0f, 1.0f, 1.0f},
+		{1.0f, 1.0f, 1.0f},
+		{1.0f, 1.0f, 1.0f},
+	};
+	float radius = 0.1f;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -67,42 +68,44 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix viewProjectionMatrix = Matrix::Multiply(viewMatrix, projectionMatrix);
 		Matrix viewportMatrix = Matrix::MakeViewport(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
-		// 回転行列を生成
-		Matrix rotateMatrix = Matrix::MakeRotateX(rotate.x) * Matrix::MakeRotateY(rotate.y) * Matrix::MakeRotateZ(rotate.z);
 
-		// 回転行列から軸を抽出
-		obb.orientations[0].x = rotateMatrix.m[0][0];
-		obb.orientations[0].y = rotateMatrix.m[0][1];
-		obb.orientations[0].z = rotateMatrix.m[0][2];
+		// ローカル座標系での行列を作成
+		Matrix shoulderMatrix = Matrix::MakeAffine(scales[0], rotates[0], translates[0]);
+		Matrix elbowMatrix = Matrix::MakeAffine(scales[1], rotates[1], translates[1]);
+		Matrix handMatrix = Matrix::MakeAffine(scales[2], rotates[2], translates[2]);
 
-		obb.orientations[1].x = rotateMatrix.m[1][0];
-		obb.orientations[1].y = rotateMatrix.m[1][1];
-		obb.orientations[1].z = rotateMatrix.m[1][2];
+		// それぞれのワールド行列を求める
+		Matrix worldShoulderMatrix = shoulderMatrix;
+		Matrix worldElbowMatrix = elbowMatrix * worldShoulderMatrix;
+		Matrix worldHandMatrix = handMatrix * worldElbowMatrix;
 
-		obb.orientations[2].x = rotateMatrix.m[2][0];
-		obb.orientations[2].y = rotateMatrix.m[2][1];
-		obb.orientations[2].z = rotateMatrix.m[2][2];
+		// それぞれのワールド座標を抽出
+		Vec3 shoulderWorldPos = { worldShoulderMatrix.m[3][0], worldShoulderMatrix.m[3][1], worldShoulderMatrix.m[3][2] };
+		Vec3 elbowWorldPos = { worldElbowMatrix.m[3][0], worldElbowMatrix.m[3][1], worldElbowMatrix.m[3][2] };
+		Vec3 handWorldPos = { worldHandMatrix.m[3][0], worldHandMatrix.m[3][1], worldHandMatrix.m[3][2] };
 
-		// OBBと球の衝突判定
-		if (IsCollision(obb, sphere, rotateMatrix)) {
-			color = RED;
-		} else {
-			color = WHITE;
-		}
+		// それぞれを球にする
+		Sphere shoulder = { shoulderWorldPos,radius };
+		Sphere elbow = { elbowWorldPos,radius };
+		Sphere hand = { handWorldPos,radius };
+
+		// 肩->肘への線分
+		Segment shoulder2elbow = { shoulderWorldPos, elbowWorldPos - shoulderWorldPos }; // 差分を計算
+		// 肘->手への線分
+		Segment elbow2hand = { elbowWorldPos, handWorldPos - elbowWorldPos }; // 差分を計算
 
 		// ImGui
 		ImGui::Begin("Window");
 
-		ImGui::DragFloat3("obb.center", &obb.center.x, 0.01f);
-		ImGui::SliderAngle("rotate.x", &rotate.x);
-		ImGui::SliderAngle("rotate.y", &rotate.y);
-		ImGui::SliderAngle("rotate.z", &rotate.z);
-		ImGui::DragFloat3("obb.orientation.x", &obb.orientations->x, 0.01f);
-		ImGui::DragFloat3("obb.orientation.y", &obb.orientations->y, 0.01f);
-		ImGui::DragFloat3("obb.orientation.z", &obb.orientations->z, 0.01f);
-		ImGui::DragFloat3("obb.size", &obb.size.x, 0.01f);
-		ImGui::DragFloat3("sphere.center", &sphere.center.x, 0.01f);
-		ImGui::DragFloat("sphere.radius", &sphere.radius, 0.01f);
+		ImGui::DragFloat3("translates[0]", &translates[0].x, 0.01f);
+		ImGui::DragFloat3("rotates[0]", &rotates[0].x, 0.01f);
+		ImGui::DragFloat3("scales[0]", &scales[0].x, 0.01f);
+		ImGui::DragFloat3("translates[1]", &translates[1].x, 0.01f);
+		ImGui::DragFloat3("rotates[1]", &rotates[1].x, 0.01f);
+		ImGui::DragFloat3("scales[1]", &scales[1].x, 0.01f);
+		ImGui::DragFloat3("translates[2]", &translates[2].x, 0.01f);
+		ImGui::DragFloat3("rotates[2]", &rotates[2].x, 0.01f);
+		ImGui::DragFloat3("scales[2]", &scales[2].x, 0.01f);
 
 		ImGui::End();
 
@@ -114,11 +117,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		// OBBの描画
-		DrawOBB(obb, viewProjectionMatrix, viewportMatrix, color);
+		// 肩（赤）の描画
+		DrawSphere(shoulder, viewProjectionMatrix, viewportMatrix, RED, 20);
+		// 肘（緑）の描画
+		DrawSphere(elbow, viewProjectionMatrix, viewportMatrix, GREEN, 20);
+		// 手（青）の描画
+		DrawSphere(hand, viewProjectionMatrix, viewportMatrix, BLUE, 20);
 
-		// 球の描画
-		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, WHITE, 20);
+		// 肩->肘への線分を描画
+		DrawSegment(shoulder2elbow, viewProjectionMatrix, viewportMatrix);
+
+		// 肘->手への線分を描画
+		DrawSegment(elbow2hand, viewProjectionMatrix, viewportMatrix);
 
 		// グリッドを描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
