@@ -131,6 +131,8 @@ void VectorScreenPrintf(int x, int y, const Vec3& vector, const char* label);
 void MatrixScreenPrintf(int x, int y, const Matrix& matrix, const char* label);
 // AABBのminとmaxの入れ替えを防止
 void PreventionSwtichMinMax(AABB aabb);
+// 反射ベクトルを求める
+Vec3 Reflect(const Vec3& input, const Vec3& normal);
 
 // カメラの操作を行う
 void CameraControl(Vec3& cameraTranslate, Vec3& cameraRotate, int& prevMousePosX, int& prevMousePosY, bool& isFirstRightClick, bool& isFirstMiddleClick);

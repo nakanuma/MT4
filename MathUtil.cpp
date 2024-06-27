@@ -639,6 +639,14 @@ void PreventionSwtichMinMax(AABB aabb)
 	aabb.max.z = (std::max)(aabb.min.z, aabb.max.z);
 }
 
+Vec3 Reflect(const Vec3& input, const Vec3& normal)
+{
+	Vec3 result;
+	result = input - 2 * Vec3::Dot(input, normal) * normal;
+
+	return result;
+}
+
 void CameraControl(Vec3& cameraTranslate, Vec3& cameraRotate, int& prevMousePosX, int& prevMousePosY, bool& isFirstRightClick, bool& isFirstMiddleClick)
 {
 	// 右クリックが押されている場合（カメラの回転）

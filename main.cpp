@@ -31,26 +31,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	float deltaTime = 1.0f / 60.0f;
 	bool isSimulationRunning = false;
 
-	// 円錐振り子の初期値
-	ConicalPendulum conicalPendulm;
-	conicalPendulm.anchor = { 0.0f, 1.0f, 0.0f };
-	conicalPendulm.length = 0.8f;
-	conicalPendulm.halfApexAngle = 0.7f;
-	conicalPendulm.angle = 0.0f;
-	conicalPendulm.angularVelocity = 0.0f;
+	// 平面の初期値
+	Plane plane;
+	plane.normal = Vec3::Normalize({ -0.2f, 0.9f, -0.3f });
+	plane.distance = 0.0f;
 
-	float radius = std::sinf(conicalPendulm.halfApexAngle) * conicalPendulm.length;
-	float height = std::cosf(conicalPendulm.halfApexAngle) * conicalPendulm.length;
-
-	Ball ball;
-	ball.position = {
-		ball.position.x = conicalPendulm.anchor.x + std::cosf(conicalPendulm.angle) * radius,
-		ball.position.y = conicalPendulm.anchor.y - height,
-		ball.position.z = conicalPendulm.anchor.z - std::sinf(conicalPendulm.angle) * radius
-	};
+	// ボールの初期値
+	Ball ball{};
+	ball.position = { 0.8f, 1.2f, 0.3f };
 	ball.mass = 2.0f;
 	ball.radius = 0.05f;
-	ball.color = BLUE;
+	ball.color = WHITE;
+	ball.acceleration = { 0.0f, -9.8f, 0.0f };
+	float e = 0.6f; // 反発係数
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -76,15 +69,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix viewportMatrix = Matrix::MakeViewport(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
 		if (isSimulationRunning) {
-			// 角速度の計算
-			conicalPendulm.angularVelocity = std::sqrtf(9.8f / (conicalPendulm.length * std::cosf(conicalPendulm.halfApexAngle)));
-			conicalPendulm.angle += conicalPendulm.angularVelocity * deltaTime;
-
-			radius = std::sinf(conicalPendulm.halfApexAngle) * conicalPendulm.length;
-			height = std::cosf(conicalPendulm.halfApexAngle) * conicalPendulm.length;
-			ball.position.x = conicalPendulm.anchor.x + std::cosf(conicalPendulm.angle) * radius;
-			ball.position.y = conicalPendulm.anchor.y - height;
-			ball.position.z = conicalPendulm.anchor.z - std::sinf(conicalPendulm.angle) * radius;
+			ball.velocity += ball.acceleration * deltaTime;
+			ball.position += ball.velocity * deltaTime;
+			if (IsCollision(Sphere{ ball.position, ball.radius }, plane)) {
+				Vec3 reflected = Reflect(ball.velocity, plane.normal);
+				Vec3 projectToNormal = Vec3::Project(reflected, plane.normal);
+				Vec3 movingDirection = reflected - projectToNormal;
+				ball.velocity = projectToNormal * e + movingDirection;
+			}
 		}
 
 		// ImGui
@@ -93,8 +85,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (ImGui::Button("Start")) {
 			isSimulationRunning = true;
 		}
-		ImGui::DragFloat("Length", &conicalPendulm.length, 0.01f);
-		ImGui::DragFloat("HalfApexAngle", &conicalPendulm.halfApexAngle, 0.01f);
 
 		ImGui::End();
 
@@ -108,9 +98,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// グリッドを描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
-		
-		// 円錐振り子のアンカーポイントから球の中心への線分を描画
-		DrawSegment({ conicalPendulm.anchor, ball.position - conicalPendulm.anchor }, viewProjectionMatrix, viewportMatrix);
+
+		// 平面を描画
+		DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
 		// 球を描画
 		DrawSphere({ ball.position, ball.radius }, viewProjectionMatrix, viewportMatrix, WHITE, 20);
 
