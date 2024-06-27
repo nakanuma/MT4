@@ -27,16 +27,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	bool isFirstRightClick = true;
 	bool isFirstMiddleClick = true;
 
-
+	// deltaTime
 	float deltaTime = 1.0f / 60.0f;
-	float angularVelocity = 3.14f;
-	float angle = 0.0f;
-
-	Vec3 spherePosition = {0.8f, 0.0f, 0.0f};
-	float radius = 0.8f; // 円運動の半径
-	Vec3 center = { 0.0f, 0.0f, 0.0f }; // 回転の中心点
-
 	bool isSimulationRunning = false;
+
+	// 振り子の初期値を設定
+	Pendulum pendulum;
+	pendulum.anchor = { 0.0f, 1.0f, 0.0f };
+	pendulum.length = 0.8f;
+	pendulum.angle = 0.7f;
+	pendulum.angularVelocity = 0.0f;
+	pendulum.angularAcceleration = 0.0f;
+
+	// 振り子の先端に付ける球
+	Sphere sphere;
+	sphere.center = {
+		sphere.center.x = pendulum.anchor.x + std::sinf(pendulum.angle) * pendulum.length,
+		sphere.center.y = pendulum.anchor.y - std::cosf(pendulum.angle) * pendulum.length,
+		sphere.center.z = pendulum.anchor.z
+	};
+	sphere.radius = 0.05f;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -61,14 +71,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix viewProjectionMatrix = Matrix::Multiply(viewMatrix, projectionMatrix);
 		Matrix viewportMatrix = Matrix::MakeViewport(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
+
 		if (isSimulationRunning) {
-			angle += angularVelocity * deltaTime;
-			// 球の位置を更新
-			spherePosition = {
-				center.x + radius * std::cosf(angle),
-				center.y + radius * std::sinf(angle),
-				center.z
-			};
+			// 振り子の角度を計算
+			pendulum.angularAcceleration = -(9.8f / pendulum.length) * std::sinf(pendulum.angle);
+			pendulum.angularVelocity += pendulum.angularAcceleration * deltaTime;
+			pendulum.angle += pendulum.angularVelocity * deltaTime;
+
+			sphere.center.x = pendulum.anchor.x + std::sinf(pendulum.angle) * pendulum.length;
+			sphere.center.y = pendulum.anchor.y - std::cosf(pendulum.angle) * pendulum.length;
+			sphere.center.z = pendulum.anchor.z;
 		}
 
 		// ImGui
@@ -87,12 +99,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓描画処理ここから
 		///
-		
+
 		// グリッドを描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 
+		// 振り子のアンカーポイントから球の中心への線分を描画
+		DrawSegment({ pendulum.anchor, sphere.center - pendulum.anchor }, viewProjectionMatrix, viewportMatrix);
 		// 球を描画
-		DrawSphere({spherePosition, 0.1f}, viewProjectionMatrix, viewportMatrix, WHITE, 20);
+		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, WHITE, 20);
 
 		///
 		/// ↑描画処理ここまで
