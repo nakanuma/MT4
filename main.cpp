@@ -27,28 +27,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	bool isFirstRightClick = true;
 	bool isFirstMiddleClick = true;
 
-
-	// ばねの初期値
-	Spring spring{};
-	spring.anchor = { 0.0f, 1.0f, 0.0f };
-	spring.naturalLength = 0.7f;
-	spring.stiffness = 100.0f;
-	spring.dampingCoefficient = 2.0f;
-
-	// ボールの初期値
-	Ball ball{};
-	ball.position = { 0.8f, 0.2f, 0.0f };
-	ball.mass = 2.0f;
-	ball.radius = 0.05f;
-	ball.color = BLUE;
-
-	// deltaTime
 	float deltaTime = 1.0f / 60.0f;
-
-	// 重力
-	const Vec3 kGravity{ 0.0f, -9.8f, 0.0f };
-
-	bool isSimulationRunning = false;
+	float angularVelocity = 3.14f;
+	float angle = 0.0f;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -73,38 +54,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix viewProjectionMatrix = Matrix::Multiply(viewMatrix, projectionMatrix);
 		Matrix viewportMatrix = Matrix::MakeViewport(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
-		if (isSimulationRunning) {
-			Vec3 diff = ball.position - spring.anchor; // ばねの現在の長さ
-			float length = Vec3::Length(diff); // diffベクトルの長さ
-			if (length != 0.0f) {
-				Vec3 direction = Vec3::Normalize(diff); // diffを正規化してばねの方向を計算
-				Vec3 restPosition = spring.anchor + direction * spring.naturalLength; // ばねが自然長のときのボールの位置
-				Vec3 displacement = length * (ball.position - restPosition); // ばねが変位している量
-				Vec3 restoringForce = -spring.stiffness * displacement; // 復元力の計算（変位に反対の方向）
 
-				// 減衰抵抗を計算する
-				Vec3 dampingForce = -spring.dampingCoefficient * ball.velocity;
-
-				// 重力を加える
-				Vec3 gravityForce = kGravity * ball.mass;
-
-				// 全体の力を計算する
-				Vec3 force = restoringForce + dampingForce + gravityForce;
-
-				ball.acceleration = force / ball.mass; // 力を質量で割って加速度を求める
-			}
-			// 加速度も速度もどちらも秒を基準とした値である
-			// それが、1/60秒間(deltaTime)適用されたと考える
-			ball.velocity += ball.acceleration * deltaTime;
-			ball.position += ball.velocity * deltaTime;
-		}
+		angle += angularVelocity * deltaTime;
 
 		// ImGui
 		ImGui::Begin("Window");
 
-		if (ImGui::Button("Start")) {
-			isSimulationRunning = true;
-		}
 
 		ImGui::End();
 
@@ -119,10 +74,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// グリッドを描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 
-		// ボールの描画
-		DrawSphere({ ball.position, 0.05f }, viewProjectionMatrix, viewportMatrix, ball.color, 20);
-		// アンカーからボールの中心への線分
-		DrawSegment({ spring.anchor * 1.01f, ball.position - spring.anchor }, viewProjectionMatrix, viewportMatrix);
+
 
 		///
 		/// ↑描画処理ここまで
