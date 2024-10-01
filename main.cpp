@@ -27,23 +27,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	bool isFirstRightClick = true;
 	bool isFirstMiddleClick = true;
 
-	// deltaTime
-	float deltaTime = 1.0f / 60.0f;
-	bool isSimulationRunning = false;
 
-	// 平面の初期値
-	Plane plane;
-	plane.normal = Vec3::Normalize({ -0.2f, 0.9f, -0.3f });
-	plane.distance = 0.0f;
-
-	// ボールの初期値
-	Ball ball{};
-	ball.position = { 0.8f, 1.2f, 0.3f };
-	ball.mass = 2.0f;
-	ball.radius = 0.05f;
-	ball.color = WHITE;
-	ball.acceleration = { 0.0f, -9.8f, 0.0f };
-	float e = 0.6f; // 反発係数
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -68,23 +52,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix viewProjectionMatrix = Matrix::Multiply(viewMatrix, projectionMatrix);
 		Matrix viewportMatrix = Matrix::MakeViewport(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
-		if (isSimulationRunning) {
-			ball.velocity += ball.acceleration * deltaTime;
-			ball.position += ball.velocity * deltaTime;
-			if (IsCollision(Sphere{ ball.position, ball.radius }, plane)) {
-				Vec3 reflected = Reflect(ball.velocity, plane.normal);
-				Vec3 projectToNormal = Vec3::Project(reflected, plane.normal);
-				Vec3 movingDirection = reflected - projectToNormal;
-				ball.velocity = projectToNormal * e + movingDirection;
-			}
-		}
-
 		// ImGui
 		ImGui::Begin("Window");
-
-		if (ImGui::Button("Start")) {
-			isSimulationRunning = true;
-		}
 
 		ImGui::End();
 
@@ -98,11 +67,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// グリッドを描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
-
-		// 平面を描画
-		DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
-		// 球を描画
-		DrawSphere({ ball.position, ball.radius }, viewProjectionMatrix, viewportMatrix, WHITE, 20);
 
 		///
 		/// ↑描画処理ここまで
