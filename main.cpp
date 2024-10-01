@@ -51,9 +51,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix viewportMatrix = Matrix::MakeViewport(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
 		// ImGui
-		ImGui::Begin("Window");
+		/*ImGui::Begin("Window");
 
-		ImGui::End();
+		ImGui::End();*/
 
 		///
 		/// ↑更新処理ここまで
@@ -62,6 +62,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓描画処理ここから
 		///
+
+		// 任意軸回転行列を作成して表示
+		Vec3 axis = Vec3::Normalize({1.0f, 1.0f, 1.0f});
+		float angle = 0.44f;
+		Matrix rotateMatrix = Matrix::MakeRotateAxisAngle(axis, angle);
+		MatrixScreenPrintf(0, 0, rotateMatrix, "rotateMatrix");
 
 		// グリッドを描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);

@@ -621,7 +621,7 @@ void MatrixScreenPrintf(int x, int y, const Matrix& matrix, const char* label)
 	for (int row = 0; row < 4; ++row) {
 		for (int column = 0; column < 4; ++column) {
 			Novice::ScreenPrintf(
-				x + column * kColumnWidth, y + kRowHeight + (row * kRowHeight), "%6.02f", matrix.m[row][column]
+				x + column * kColumnWidth, y + kRowHeight + (row * kRowHeight), "%6.03f", matrix.m[row][column]
 			);
 		}
 	}

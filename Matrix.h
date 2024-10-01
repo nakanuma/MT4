@@ -64,4 +64,7 @@ public:
 	static Matrix MakeOrthograph(float left, float top, float right, float bottom, float nearClip, float farClip);
 	// ビューポート変換行列
 	static Matrix MakeViewport(float left, float top, float width, float height, float minDepth, float maxDepth);
+
+	// 任意軸回転行列の作成
+	static Matrix MakeRotateAxisAngle(const Vec3& axis, float angle);
 };
