@@ -381,7 +381,7 @@ Matrix Matrix::MakeRotateAxisAngle(const Vec3& axis, float angle) {
 	float zz = axis.z * axis.z;
 
 	result.m[0][0] = xx * (1 - cosTheta) + cosTheta;
-	result.m[0][1] = xy * (1 - cosTheta) + axis.x * sinTheta;
+	result.m[0][1] = xy * (1 - cosTheta) + axis.z * sinTheta;
 	result.m[0][2] = xz * (1 - cosTheta) - axis.y * sinTheta;
 	result.m[0][3] = 0.0f;
 
