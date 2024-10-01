@@ -63,11 +63,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		// 任意軸回転行列を作成して表示
-		Vec3 axis = Vec3::Normalize({1.0f, 1.0f, 1.0f});
-		float angle = 0.44f;
-		Matrix rotateMatrix = Matrix::MakeRotateAxisAngle(axis, angle);
-		MatrixScreenPrintf(0, 0, rotateMatrix, "rotateMatrix");
+		Vec3 from0 = Vec3::Normalize(Vec3{1.0f, 0.7f, 0.5f});
+		Vec3 to0 = from0 * -1;
+		Vec3 from1 = Vec3::Normalize(Vec3{-0.6f, 0.9f, 0.2f});
+		Vec3 to1 = Vec3::Normalize(Vec3{0.4f, 0.7f, -0.5f});
+		Matrix rotateMatrix0 = Matrix::DirectionToDirection(
+			Vec3::Normalize(Vec3{1.0f, 0.0f, 0.0f}), Vec3::Normalize(Vec3{-1.0f, 0.0f, 0.0f}));
+		Matrix rotateMatrix1 = Matrix::DirectionToDirection(from0, to0);
+		Matrix rotateMatrix2 = Matrix::DirectionToDirection(from1, to1);
+
+		MatrixScreenPrintf(0, 0, rotateMatrix0, "rotateMatrix0");
+		MatrixScreenPrintf(0, kRowHeight * 5, rotateMatrix1, "rotateMatrix1");
+		MatrixScreenPrintf(0, kRowHeight * 10, rotateMatrix2, "rotateMatrix2");
 
 		// グリッドを描画
 		DrawGrid(viewProjectionMatrix, viewportMatrix);

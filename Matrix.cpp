@@ -381,7 +381,48 @@ Matrix Matrix::MakeRotateAxisAngle(const Vec3& axis, float angle) {
 	float zz = axis.z * axis.z;
 
 	result.m[0][0] = xx * (1 - cosTheta) + cosTheta;
-	result.m[0][1] = xy * (1 - cosTheta) + axis.x * sinTheta;
+	result.m[0][1] = xy * (1 - cosTheta) + axis.z * sinTheta;
+	result.m[0][2] = xz * (1 - cosTheta) - axis.y * sinTheta;
+	result.m[0][3] = 0.0f;
+
+	result.m[1][0] = xy * (1 - cosTheta) - axis.z * sinTheta;
+	result.m[1][1] = yy * (1 - cosTheta) + cosTheta;
+	result.m[1][2] = yz * (1 - cosTheta) + axis.x * sinTheta;
+	result.m[1][3] = 0.0f;
+
+	result.m[2][0] = xz * (1 - cosTheta) + axis.y * sinTheta;
+	result.m[2][1] = yz * (1 - cosTheta) - axis.x * sinTheta;
+	result.m[2][2] = zz * (1 - cosTheta) + cosTheta;
+	result.m[2][3] = 0.0f;
+
+	result.m[3][0] = 0.0f;
+	result.m[3][1] = 0.0f;
+	result.m[3][2] = 0.0f;
+	result.m[3][3] = 1.0f;
+
+	return result;
+}
+
+Matrix Matrix::DirectionToDirection(const Vec3& from, const Vec3& to) { 
+	Matrix result = Matrix::MakeIdentity();
+
+	// 回転軸をクロス積で求める
+	Vec3 axis = Vec3::Normalize(Vec3::Cross(from, to));
+	// cosを求める
+	float cosTheta = Vec3::Dot(from, to);
+	// sinを求める
+	float sinTheta = Vec3::Length(Vec3::Cross(from, to));
+
+	// ロドリゲスの回転公式に基づく行列の要素
+	float xx = axis.x * axis.x;
+	float xy = axis.x * axis.y;
+	float xz = axis.x * axis.z;
+	float yy = axis.y * axis.y;
+	float yz = axis.y * axis.z;
+	float zz = axis.z * axis.z;
+
+	result.m[0][0] = xx * (1 - cosTheta) + cosTheta;
+	result.m[0][1] = xy * (1 - cosTheta) + axis.z * sinTheta;
 	result.m[0][2] = xz * (1 - cosTheta) - axis.y * sinTheta;
 	result.m[0][3] = 0.0f;
 

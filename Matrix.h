@@ -67,4 +67,6 @@ public:
 
 	// 任意軸回転行列の作成
 	static Matrix MakeRotateAxisAngle(const Vec3& axis, float angle);
+	// ある方向からある方向への回転
+	static Matrix DirectionToDirection(const Vec3& from, const Vec3& to);
 };
