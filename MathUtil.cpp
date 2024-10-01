@@ -636,7 +636,7 @@ void PreventionSwtichMinMax(AABB aabb)
 	aabb.max.y = (std::max)(aabb.min.y, aabb.max.x);
 
 	aabb.min.z = (std::min)(aabb.min.z, aabb.max.z);
-	aabb.max.z = (std::max)(aabb.min.z, aabb.max.z);
+	aabb.max.z = (std::max)(aabb.min.z, aabb.max.z); 
 }
 
 Vec3 Reflect(const Vec3& input, const Vec3& normal)
