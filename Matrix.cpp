@@ -1,4 +1,5 @@
 ﻿#include "Matrix.h"
+#include <numbers>
 
 Matrix::Matrix()
 {
@@ -406,10 +407,23 @@ Matrix Matrix::MakeRotateAxisAngle(const Vec3& axis, float angle) {
 Matrix Matrix::DirectionToDirection(const Vec3& from, const Vec3& to) { 
 	Matrix result = Matrix::MakeIdentity();
 
-	// 回転軸をクロス積で求める
-	Vec3 axis = Vec3::Normalize(Vec3::Cross(from, to));
 	// cosを求める
 	float cosTheta = Vec3::Dot(from, to);
+
+	 // 平行・反平行かを確認
+	if (fabs(cosTheta - 1.0f) < 1e-6) {
+		// from と to が同じ方向を向いている場合、回転は不要
+		return result; // 単位行列を返す
+	} else if (fabs(cosTheta + 1.0f) < 1e-6) {
+		// from と to が反対方向を向いている場合、180度回転が必要
+		// 適当な軸を選ぶ（from に直交するベクトル）
+		Vec3 axis = Vec3::Normalize(Vec3::Orthogonal(from)); // from に直交するベクトルを取得
+		result = Matrix::MakeRotateAxisAngle(axis, std::numbers::pi_v<float>); // 180度回転行列を生成
+		return result;
+	}
+
+	// 回転軸をクロス積で求める
+	Vec3 axis = Vec3::Normalize(Vec3::Cross(from, to));
 	// sinを求める
 	float sinTheta = Vec3::Length(Vec3::Cross(from, to));
 

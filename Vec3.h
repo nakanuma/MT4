@@ -66,6 +66,11 @@ public:
 	static Vec3 Project(const Vec3& v1, const Vec3& v2);
 	// 最近接点
 	static Vec3 ClosestPoint(const Vec3& point, const Segment& segment);
+
+	// 垂直ベクトル
+	static Vec3 Perpendicular(const Vec3& v);
+	// 直行ベクトルを返す
+	static Vec3 Orthogonal(const Vec3& v);
 };
 
 // 直線

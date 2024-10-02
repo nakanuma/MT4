@@ -132,3 +132,24 @@ Vec3 Vec3::ClosestPoint(const Vec3& point, const Segment& segment)
 
 	return closestPoint;
 }
+
+Vec3 Vec3::Perpendicular(const Vec3& v) { 
+	 // z成分がゼロの場合、任意の方向のベクトルを返す
+	if (v.x == 0 && v.y == 0) {
+		return Vec3(1.0f, 0.0f, 0.0f); // x軸に沿ったベクトル
+	}
+	// vのz成分をゼロにして、新しいベクトルを返す
+	return Vec3(-v.y, v.x, 0.0f); // 2D空間での垂直ベクトル
+}
+
+Vec3 Vec3::Orthogonal(const Vec3& v) { 
+	// 与えられたベクトルに直交するベクトルを探す
+	// 最も長さが短くないベクトルとクロス積を取る
+	if (fabs(v.x) < fabs(v.y) && fabs(v.x) < fabs(v.z)) {
+		// v.x が最も小さい場合、x 軸に近いので、y 軸方向のベクトルとクロス積を計算
+		return Vec3::Cross(v, Vec3(1.0f, 0.0f, 0.0f)); // x 軸とクロス積
+	} else {
+		// そうでない場合は、z 軸とクロス積を計算
+		return Vec3::Cross(v, Vec3(0.0f, 0.0f, 1.0f)); // z 軸とクロス積
+	}
+}
